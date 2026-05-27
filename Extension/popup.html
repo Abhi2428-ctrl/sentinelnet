@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>SentinelNet Email Shield</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#050d14;--s1:#0a1628;--s2:#0e2240;
+  --c:#00d4ff;--g:#00ff88;--r:#ff2d55;--y:#ffcc00;--p:#bf5fff;
+  --w:#e8f4ff;--td:#4a7a9b;--b1:#0e2240;--b2:#1a3a5c;
+}
+body{width:320px;background:var(--bg);color:var(--w);font-family:'Courier New',monospace;font-size:11px;border:1px solid var(--b2);}
+.header{background:var(--s1);padding:12px 14px;border-bottom:1px solid var(--b2);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--c),var(--p));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-text{font-size:13px;font-weight:bold;color:var(--c);letter-spacing:1px;}
+.logo-sub{font-size:9px;color:var(--td);}
+.status-bar{padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b1);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot.connected{background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite;}
+.dot.disconnected{background:#444;}
+.dot.error{background:var(--r);}
+.dot.checking{background:var(--y);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#status-main{font-weight:bold;font-size:10px;}
+#status-sub{color:var(--td);font-size:9px;}
+.section{padding:12px 14px;border-bottom:1px solid var(--b1);}
+.sec-title{font-size:9px;color:var(--td);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.key-display{background:var(--s2);border:1px solid var(--g);border-radius:4px;padding:8px 10px;font-size:12px;color:var(--g);letter-spacing:2px;margin-bottom:8px;text-align:center;}
+input{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:8px 10px;color:var(--w);font-size:11px;font-family:'Courier New',monospace;outline:none;letter-spacing:1px;margin-bottom:8px;}
+input:focus{border-color:var(--c);}
+input::placeholder{color:var(--td);letter-spacing:0;}
+button{width:100%;padding:9px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;border:1px solid;transition:all .2s;margin-bottom:6px;}
+.btn-connect{border-color:var(--g);color:var(--g);background:rgba(0,255,136,.05);}
+.btn-connect:hover{background:rgba(0,255,136,.15);}
+.btn-disconnect{border-color:var(--r);color:var(--r);background:rgba(255,45,85,.05);}
+.btn-disconnect:hover{background:rgba(255,45,85,.15);}
+.btn-dash{border-color:var(--c);color:var(--c);background:rgba(0,212,255,.05);}
+.btn-dash:hover{background:rgba(0,212,255,.15);}
+.result{padding:6px 8px;border-radius:4px;font-size:10px;margin-top:4px;display:none;white-space:pre-line;}
+.result.ok{background:rgba(0,255,136,.08);color:var(--g);border:1px solid rgba(0,255,136,.2);}
+.result.err{background:rgba(255,45,85,.08);color:var(--r);border:1px solid rgba(255,45,85,.2);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-box{background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:8px;text-align:center;}
+.stat-val{font-size:18px;font-weight:bold;color:var(--c);}
+.stat-lbl{font-size:8px;color:var(--td);margin-top:2px;}
+.hint{font-size:9px;color:var(--td);line-height:1.7;margin-top:6px;}
+.hidden{display:none!important;}
+.footer{padding:8px 14px;text-align:center;color:var(--td);font-size:8px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-icon">&#x1F6E1;</div>
+  <div>
+    <div class="logo-text">SENTINELNET</div>
+    <div class="logo-sub">EMAIL SHIELD v2.0 // AMACDF</div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="dot disconnected" id="dot"></div>
+  <div>
+    <div id="status-main" style="color:#888">NOT CONNECTED</div>
+    <div id="status-sub">Enter your Config Key to activate</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-title">// Config Key</div>
+  <div id="view-connected" class="hidden">
+    <div class="key-display" id="key-masked">SN2-****-****-****</div>
+    <button class="btn-disconnect" id="btn-disconnect">&#10005; DISCONNECT</button>
+  </div>
+  <div id="view-disconnected">
+    <input id="key-input" placeholder="SN2-XXXX-XXXX-XXXX-XXXX" maxlength="24" autocomplete="off" spellcheck="false"/>
+    <button class="btn-connect" id="btn-connect">&#128279; CONNECT TO SENTINELNET</button>
+    <div class="result" id="result"></div>
+    <div class="hint">Get your key: SentinelNet dashboard &rarr; Email Monitor &rarr; GENERATE KEY</div>
+  </div>
+</div>
+
+<div class="section hidden" id="section-stats">
+  <div class="sec-title">// Session Stats</div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-val" id="s-scanned">0</div><div class="stat-lbl">SCANNED</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-threats" style="color:#ff2d55">0</div><div class="stat-lbl">THREATS</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-blocked" style="color:#ff6600">0</div><div class="stat-lbl">FLAGGED</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-safe" style="color:#00ff88">0</div><div class="stat-lbl">SAFE</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <button class="btn-dash" id="btn-dashboard">&#8983; OPEN SENTINELNET DASHBOARD</button>
+</div>
+
+<div class="footer">SentinelNet AMACDF v2.0 &middot; 100% Local &middot; Zero Cloud</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

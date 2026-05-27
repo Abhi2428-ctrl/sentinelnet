@@ -1,0 +1,138 @@
+/* SentinelNet Email Shield — Email Overlay Styles */
+
+#sn-scan-badge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  margin: 8px 0 12px 0;
+  border: 1px solid #00ff88;
+  border-radius: 14px;
+  background: #001a00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  z-index: 99999;
+  box-shadow: 0 4px 24px rgba(0,255,136,0.20), 0 1px 6px rgba(0,0,0,0.5);
+  max-width: 600px;
+  animation: sn-fadein 0.3s ease;
+}
+
+@keyframes sn-fadein {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sn-badge.sn-scanning {
+  border-color: #0099ff;
+  background: #00001a;
+  color: #44aaff;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+}
+
+.sn-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sn-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.sn-verdict {
+  flex: 1;
+  font-weight: bold;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.sn-conf {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.sn-close {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+}
+.sn-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.sn-agents {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.sn-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+}
+
+.sn-agent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sn-agent-name {
+  color: #888;
+  min-width: 100px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sn-agent-score {
+  font-size: 9px;
+  flex: 1;
+}
+
+.sn-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.sn-tag {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;           /* ← curved tags */
+  padding: 2px 7px;
+  font-size: 9px;
+  color: #aaa;
+}
+
+/* Scanning spinner */
+.sn-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(0,153,255,0.3);
+  border-top-color: #0099ff;
+  border-radius: 50%;
+  animation: sn-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes sn-spin {
+  to { transform: rotate(360deg); }
+}
