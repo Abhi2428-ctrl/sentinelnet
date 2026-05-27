@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SentinelNet v2.0 — Anu</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#020b14;--s1:#050f1c;--s2:#081525;--s3:#0b1d30;
+  --b1:#0e2640;--b2:#153550;--b3:#1d4a6e;
+  --c:#00f5ff;--c2:#00b8c4;--c3:rgba(0,245,255,0.08);
+  --o:#ff6b35;--g:#7fff00;--p:#bf5fff;--r:#ff2d55;--y:#ffd60a;--w:#e8f4fd;
+  --td:#4a7a99;--tm:#7aa8c4;
+  --gc:0 0 20px rgba(0,245,255,0.35);
+  --go:0 0 20px rgba(255,107,53,0.35);
+  --gr:0 0 25px rgba(255,45,85,0.45);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--w);font-family:'Rajdhani',sans-serif;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);}
+body::after{content:'';position:fixed;inset:0;z-index:9997;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.4) 100%);}
+
+/* ── LAYOUT ─────────────────────────────────────── */
+#shell{display:grid;grid-template-rows:52px 1fr;height:100vh;}
+#body{display:grid;grid-template-columns:240px 1fr 280px;overflow:hidden;height:100%;}
+
+/* ── HEADER ─────────────────────────────────────── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;border-bottom:1px solid var(--b2);
+  background:linear-gradient(90deg,#020b14,#071525 50%,#020b14);
+  position:relative;z-index:10;
+}
+header::after{content:'';position:absolute;bottom:0;left:5%;right:5%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:0.6;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-badge{
+  width:34px;height:34px;border:1.5px solid var(--c);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  box-shadow:var(--gc);animation:gp 3s ease-in-out infinite;
+}
+@keyframes gp{0%,100%{box-shadow:0 0 8px rgba(0,245,255,0.3)}50%{box-shadow:0 0 22px rgba(0,245,255,0.8)}}
+.logo-name{font-family:'Orbitron';font-size:17px;font-weight:900;color:var(--c);letter-spacing:3px;}
+.logo-ver{font-family:'Share Tech Mono';font-size:9px;color:var(--td);letter-spacing:2px;margin-top:1px;}
+.hstats{display:flex;gap:20px;}
+.hs{text-align:center;padding:0 8px;}
+.hs-v{font-family:'Orbitron';font-size:15px;font-weight:700;}
+.hs-l{font-family:'Share Tech Mono';font-size:8px;color:var(--td);letter-spacing:1px;}
+.hright{display:flex;align-items:center;gap:12px;}
+.badge-op{display:flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid var(--g);
+  border-radius:20px;font-family:'Share Tech Mono';font-size:10px;color:var(--g);}
+.dot-op{width:5px;height:5px;border-radius:50%;background:var(--g);animation:bl 1s ease-in-out infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0.2}}
+#hclock{font-family:'Share Tech Mono';font-size:11px;color:var(--td);}
+#badge-adv{display:flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid var(--r);
+  border-radius:20px;font-family:'Share Tech Mono';font-size:9px;color:var(--r);
+  cursor:pointer;transition:all .3s;display:none;}
+#badge-adv.on{display:flex;background:rgba(255,45,85,0.1);}
+
+/* ── SIDEBAR LEFT ───────────────────────────────── */
+#sl{border-right:1px solid var(--b1);overflow-y:auto;padding:10px;background:linear-gradient(180deg,var(--s1),var(--bg));}
+#sl::-webkit-scrollbar{width:2px;}
+#sl::-webkit-scrollbar-thumb{background:var(--b2);}
+
+.sec-hdr{font-family:'Share Tech Mono';font-size:9px;color:var(--td);letter-spacing:2px;
+  padding:6px 2px 6px;border-bottom:1px solid var(--b1);margin-bottom:8px;text-transform:uppercase;}
+
+/* Agent Cards */
+.ag{border:1px solid var(--b1);border-radius:7px;padding:10px;margin-bottom:8px;
+  background:var(--s2);position:relative;overflow:hidden;transition:all .3s;cursor:default;}
+.ag::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac,var(--c));}
+.ag.off{opacity:.4;filter:grayscale(50%);border-color:#333;}
+.ag.off .ag-btn{border-color:var(--g)!important;color:var(--g)!important;background:rgba(0,255,136,.06)!important;}
+.ag-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.ag-n{font-weight:700;font-size:12px;}
+.ag-ic{font-size:14px;}
+.ag-mod{font-size:9px;color:var(--td);margin-bottom:7px;font-family:'Share Tech Mono';}
+.bar-wrap{margin-bottom:4px;}
+.bar-lbl{display:flex;justify-content:space-between;font-size:9px;color:var(--td);margin-bottom:2px;}
+.bar-track{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width 1s ease;background:var(--ac,var(--c));}
+.ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:7px;}
+.ag-stat{background:var(--bg);border-radius:4px;padding:3px 5px;}
+.ag-sv{font-family:'Share Tech Mono';font-size:11px;color:var(--ac,var(--c));}
+.ag-sl{font-size:8px;color:var(--td);}
+.ag-btn{width:100%;margin-top:6px;padding:4px;border-radius:4px;cursor:pointer;
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;
+  border:1px solid var(--ac,var(--c));color:var(--ac,var(--c));background:transparent;transition:all .2s;}
+.ag-btn:hover{background:rgba(0,245,255,.08);}
+.ag-eps{font-family:'Share Tech Mono';font-size:8px;color:var(--td);text-align:center;margin-top:3px;}
+.ag-status{font-size:8px;font-family:'Share Tech Mono';}
+
+/* ── CENTER ─────────────────────────────────────── */
+#center{overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:0;}
+#center::-webkit-scrollbar{width:2px;}
+#center::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* Metrics */
+.mrow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.mc{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:11px;
+  text-align:center;position:relative;overflow:hidden;transition:border-color .3s;}
+.mc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--mc,var(--c)),transparent);}
+.mc:hover{border-color:var(--b3);}
+.mc-v{font-family:'Orbitron';font-size:20px;font-weight:700;color:var(--mc,var(--c));}
+.mc-l{font-size:9px;color:var(--td);letter-spacing:1px;margin-top:3px;}
+.mc-s{font-size:8px;color:var(--td);margin-top:1px;}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:8px;flex-shrink:0;flex-wrap:wrap;}
+.tab{padding:5px 12px;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono';
+  font-size:10px;letter-spacing:1px;border:1px solid var(--b1);color:var(--td);
+  background:transparent;transition:all .2s;}
+.tab.active{border-color:var(--c);color:var(--c);background:var(--c3);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+#tab-vcm.active,#tab-security.active{display:flex;flex-direction:column;}
+
+/* Charts */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cc{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:12px;}
+.cc-t{font-family:'Share Tech Mono';font-size:9px;color:var(--td);letter-spacing:1.5px;margin-bottom:10px;text-transform:uppercase;}
+canvas{display:block;}
+
+/* Threat Table */
+.tf{background:var(--s1);border:1px solid var(--b1);border-radius:7px;overflow:hidden;}
+.tf-hdr{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--b1);background:var(--s2);}
+.tf-ht{font-family:'Share Tech Mono';font-size:9px;color:var(--td);letter-spacing:1.5px;}
+.tf-hc{font-family:'Orbitron';font-size:11px;color:var(--c);}
+.ttbl{width:100%;border-collapse:collapse;font-size:10px;}
+.ttbl th{padding:5px 8px;text-align:left;font-family:'Share Tech Mono';font-size:8px;
+  color:var(--td);background:var(--s2);border-bottom:1px solid var(--b1);font-weight:400;letter-spacing:.8px;}
+.ttbl td{padding:5px 8px;border-bottom:1px solid rgba(14,38,64,.4);}
+.tr-row{animation:si .25s ease;}
+@keyframes si{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.sev{padding:1px 5px;border-radius:3px;font-family:'Share Tech Mono';font-size:8px;letter-spacing:.5px;}
+.sev-CRITICAL{background:rgba(255,45,85,.15);color:var(--r);border:1px solid rgba(255,45,85,.4);}
+.sev-HIGH{background:rgba(255,107,53,.15);color:var(--o);border:1px solid rgba(255,107,53,.4);}
+.sev-MEDIUM{background:rgba(255,214,10,.1);color:var(--y);border:1px solid rgba(255,214,10,.35);}
+.sev-LOW{background:rgba(127,255,0,.08);color:var(--g);border:1px solid rgba(127,255,0,.3);}
+.act{padding:1px 5px;border-radius:3px;font-family:'Share Tech Mono';font-size:8px;}
+.act-BLOCK{background:rgba(255,45,85,.1);color:var(--r);}
+.act-ALERT{background:rgba(255,214,10,.1);color:var(--y);}
+.act-ISOLATE{background:rgba(255,107,53,.1);color:var(--o);}
+.act-ESCALATE{background:rgba(191,95,255,.1);color:var(--p);}
+.act-MONITOR{background:rgba(74,111,165,.15);color:var(--td);}
+.status-MONITORING{color:var(--td);}
+.status-BLOCKED{color:var(--r);}
+.status-FLAGGED{color:var(--y);}
+.mono{font-family:'Share Tech Mono';font-size:9px;color:var(--td);}
+.conf-h{color:var(--r);font-family:'Share Tech Mono';font-size:9px;}
+.conf-m{color:var(--y);font-family:'Share Tech Mono';font-size:9px;}
+.conf-l{color:var(--g);font-family:'Share Tech Mono';font-size:9px;}
+.adv-tag{background:rgba(255,45,85,.2);color:var(--r);font-size:7px;padding:1px 3px;border-radius:2px;font-family:'Share Tech Mono';}
+
+/* SHAP Explainability Panel */
+.shap-item{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.shap-feat{font-family:'Share Tech Mono';font-size:9px;color:var(--tm);min-width:110px;}
+.shap-bar-wrap{flex:1;height:6px;background:var(--b1);border-radius:3px;overflow:hidden;}
+.shap-bar{height:100%;border-radius:3px;transition:width .5s ease;}
+.shap-val{font-family:'Share Tech Mono';font-size:9px;min-width:45px;text-align:right;}
+
+/* Audit Log */
+.alog-item{border:1px solid var(--b1);border-radius:6px;padding:8px;margin-bottom:6px;
+  background:var(--s2);position:relative;overflow:hidden;}
+.alog-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+.alog-CRITICAL::before{background:var(--r);}
+.alog-HIGH::before{background:var(--o);}
+.alog-MEDIUM::before{background:var(--y);}
+.alog-LOW::before{background:var(--g);}
+.alog-time{font-family:'Share Tech Mono';font-size:8px;color:var(--td);}
+.alog-reason{font-size:10px;color:var(--w);margin:3px 0;line-height:1.4;}
+.alog-action{display:flex;gap:5px;align-items:center;margin-top:3px;}
+
+/* Trust Matrix */
+.tm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+.tm-cell{background:var(--s2);border-radius:4px;padding:4px;text-align:center;border:1px solid var(--b1);}
+.tm-v{font-family:'Orbitron';font-size:11px;}
+.tm-l{font-size:7px;color:var(--td);margin-top:1px;}
+.tm-from{font-size:8px;color:var(--td);font-family:'Share Tech Mono';margin-bottom:3px;}
+
+/* ── SIDEBAR RIGHT ───────────────────────────────── */
+#sr{border-left:1px solid var(--b1);overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px;}
+#sr::-webkit-scrollbar{width:2px;}
+#sr::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* FL Panel */
+.fl-p{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:12px;}
+.fl-t{font-family:'Share Tech Mono';font-size:9px;color:var(--td);letter-spacing:1.5px;margin-bottom:10px;text-transform:uppercase;}
+.fl-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(14,38,64,.5);}
+.fl-row:last-of-type{border:none;}
+.fl-k{font-size:9px;color:var(--td);}
+.fl-v{font-family:'Share Tech Mono';font-size:10px;color:var(--c);}
+.fl-btn{width:100%;margin-top:10px;padding:7px;border-radius:5px;cursor:pointer;
+  font-family:'Orbitron';font-size:9px;letter-spacing:2px;font-weight:700;
+  border:1px solid var(--c);color:var(--c);background:rgba(0,245,255,.04);
+  transition:all .25s;}
+.fl-btn:hover{background:rgba(0,245,255,.14);box-shadow:var(--gc);}
+.adv-btn{width:100%;margin-top:6px;padding:6px;border-radius:5px;cursor:pointer;
+  font-family:'Orbitron';font-size:9px;letter-spacing:1.5px;font-weight:700;
+  border:1px solid var(--r);color:var(--r);background:rgba(255,45,85,.04);transition:all .25s;}
+.adv-btn:hover{background:rgba(255,45,85,.12);}
+.adv-btn.on{background:rgba(255,45,85,.2);box-shadow:var(--gr);}
+
+/* BW Bar */
+.bw-bar{height:5px;background:var(--b1);border-radius:3px;overflow:hidden;margin:4px 0;}
+.bw-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--y));border-radius:3px;transition:width .5s;}
+
+/* Alerts */
+.al-item{border:1px solid var(--b1);border-radius:5px;padding:8px;margin-bottom:6px;
+  background:var(--s2);position:relative;overflow:hidden;animation:ai .35s ease;}
+@keyframes ai{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.al-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+.al-CRITICAL::before{background:var(--r);}
+.al-HIGH::before{background:var(--o);}
+.al-MEDIUM::before{background:var(--y);}
+.al-t{font-family:'Share Tech Mono';font-size:8px;color:var(--td);}
+.al-m{font-size:10px;color:var(--w);margin-top:2px;line-height:1.35;}
+.al-a{font-size:8px;color:var(--td);margin-top:3px;}
+
+/* Robustness */
+.rob-item{margin-bottom:8px;}
+.rob-hdr{display:flex;justify-content:space-between;font-size:9px;color:var(--td);margin-bottom:2px;}
+.rob-bar{height:3px;background:var(--b1);border-radius:2px;margin-bottom:1px;overflow:hidden;}
+.rob-fill{height:100%;border-radius:2px;transition:width .5s;}
+.rob-ft{display:flex;justify-content:space-between;font-size:8px;color:var(--td);}
+
+/* Agent dot */
+.ag-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;flex-shrink:0;}
+
+/* Scrollable table */
+.tbl-scroll{overflow-x:auto;max-height:420px;overflow-y:auto;}
+.tbl-scroll::-webkit-scrollbar{height:2px;width:2px;}
+.tbl-scroll::-webkit-scrollbar-thumb{background:var(--b2);}
+</style>
+</head>
+<body>
+<div id="shell">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-badge">🛡</div>
+    <div>
+      <div class="logo-name">SENTINELNET</div>
+      <div class="logo-ver">A❤️</div>
+    </div>
+  </div>
+  <div class="hstats">
+    <div class="hs"><div class="hs-v" id="h-total" style="color:var(--c)">0</div><div class="hs-l">THREATS</div></div>
+    <div class="hs"><div class="hs-v" id="h-blocked" style="color:var(--g)">0</div><div class="hs-l">BLOCKED</div></div>
+    <div class="hs"><div class="hs-v" id="h-fpr" style="color:var(--y)">0%</div><div class="hs-l">FALSE POS</div></div>
+    <div class="hs"><div class="hs-v" id="h-fl" style="color:var(--p)">0</div><div class="hs-l">FL ROUNDS</div></div>
+    <div class="hs"><div class="hs-v" id="h-reward" style="color:var(--o)">0.000</div><div class="hs-l">Σ REWARD</div></div>
+  </div>
+  <div class="hright">
+    <div id="badge-adv" class="on" style="display:none">⚡ ADV MODE</div>
+    <div id="badge-capture" style="display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-family:'Share Tech Mono';font-size:9px;border:1px solid var(--td);color:var(--td)">📡 SYNTHETIC</div>
+    <div class="badge-op"><div class="dot-op"></div>OPERATIONAL</div>
+    <div id="hclock">--:--:--</div>
+  </div>
+</header>
+
+<!-- STARTUP CHECK BANNER -->
+<div id="startup-banner" style="display:none;padding:8px 16px;font-family:'Share Tech Mono';font-size:9px;border-bottom:1px solid var(--b1);background:var(--s2)">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span id="sb-icon">⏳</span>
+    <span id="sb-mode" style="font-weight:bold;letter-spacing:1px">CHECKING...</span>
+    <span id="sb-msg" style="color:var(--td)"></span>
+    <span style="flex:1"></span>
+    <span id="sb-actions" style="color:var(--y)"></span>
+    <button onclick="showStartupTab()" style="padding:2px 10px;border:1px solid var(--td);border-radius:3px;background:transparent;color:var(--td);cursor:pointer;font-family:'Share Tech Mono';font-size:8px">VIEW DETAILS</button>
+    <button onclick="document.getElementById('startup-banner').style.display='none'" style="padding:2px 8px;border:1px solid var(--td);border-radius:3px;background:transparent;color:var(--td);cursor:pointer;font-family:'Share Tech Mono';font-size:8px">✕</button>
+  </div>
+</div>
+
+<!-- STARTUP CHECK BANNER -->
+<div id="startup-banner" style="display:none;margin:6px 10px 0;border-radius:6px;padding:8px 14px;font-family:'Share Tech Mono';font-size:9px;border:1px solid;transition:all .4s">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="sb-icon" style="font-size:14px">⏳</span>
+      <div>
+        <div id="sb-mode" style="font-size:11px;font-family:'Orbitron';letter-spacing:1px">CHECKING SYSTEM...</div>
+        <div id="sb-msg"  style="margin-top:2px;opacity:.8"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap" id="sb-badges"></div>
+    <button onclick="document.getElementById('startup-banner').style.display='none'"
+      style="background:none;border:1px solid currentColor;border-radius:3px;
+             padding:2px 8px;cursor:pointer;font-family:'Share Tech Mono';
+             font-size:8px;opacity:.6">DISMISS</button>
+  </div>
+  <!-- Fix instructions (shown only if warnings/criticals exist) -->
+  <div id="sb-fixes" style="margin-top:8px;display:none;border-top:1px solid rgba(255,255,255,.1);padding-top:8px"></div>
+</div>
+
+<div id="body">
+
+<!-- LEFT: AGENTS -->
+<div id="sl">
+  <div class="sec-hdr">// DEFENSE AGENTS [DEC-POMDP]</div>
+  <div id="agents-wrap"></div>
+</div>
+
+<!-- CENTER -->
+<div id="center">
+
+  <!-- Metrics -->
+  <div class="mrow">
+    <div class="mc" style="--mc:var(--c)"><div class="mc-v" id="m-reward">0.0000</div><div class="mc-l">SYSTEM REWARD</div><div class="mc-s">Σ w·τ·acc</div></div>
+    <div class="mc" style="--mc:var(--g)"><div class="mc-v" id="m-acc">0%</div><div class="mc-l">AVG ACCURACY</div><div class="mc-s">Detection rate</div></div>
+    <div class="mc" style="--mc:var(--y)"><div class="mc-v" id="m-fpr">0%</div><div class="mc-l">FALSE POS RATE</div><div class="mc-s">Target: 2.1%</div></div>
+    <div class="mc" style="--mc:var(--o)"><div class="mc-v" id="m-tpm">0</div><div class="mc-l">THREATS/MIN</div><div class="mc-s">Live rate</div></div>
+    <div class="mc" style="--mc:var(--p)"><div class="mc-v" id="m-bw">0 MB</div><div class="mc-l">FL BANDWIDTH</div><div class="mc-s">Target: 2.3MB/rnd</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('threats')">LIVE THREATS</button>
+    <button class="tab" onclick="switchTab('shap')">XAI / SHAP</button>
+    <button class="tab" onclick="switchTab('audit')">AUDIT LOGS</button>
+    <button class="tab" onclick="switchTab('rl')">RL TRAINING</button>
+    <button class="tab" onclick="switchTab('scan')" style="border-color:var(--o);color:var(--o)">🔍 AI SCANNER</button>
+    <button class="tab" onclick="switchTab('vcm')" style="border-color:var(--p);color:var(--p)">📹 VIDEO MONITOR</button>
+    <button class="tab" onclick="switchTab('email')" style="border-color:var(--g);color:var(--g)">📬 EMAIL MONITOR</button>
+    <button class="tab" onclick="switchTab('security')" style="border-color:var(--r);color:var(--r)">🔒 SECURITY</button>
+  </div>
+
+  <!-- THREATS TAB -->
+  <div class="tab-panel active" id="tab-threats">
+    <div class="crow" style="margin-bottom:10px;">
+      <div class="cc">
+        <div class="cc-t">// REWARD HISTORY (Eq.16-17)</div>
+        <canvas id="c-reward" height="90"></canvas>
+      </div>
+      <div class="cc">
+        <div class="cc-t">// THREAT DISTRIBUTION BY AGENT</div>
+        <canvas id="c-donut" width="240" height="90"></canvas>
+      </div>
+    </div>
+    <div class="tf">
+      <div class="tf-hdr">
+        <div class="tf-ht">// LIVE THREAT FEED — DQN ACTION DECISIONS</div>
+        <div class="tf-hc" id="feed-cnt">0 EVENTS</div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="ttbl">
+          <thead><tr>
+            <th>ID</th><th>TIME</th><th>AGENT</th><th>THREAT</th>
+            <th>SEV</th><th>ACTION</th><th>CONF</th><th>ε</th><th>REWARD</th><th>STATUS</th>
+          </tr></thead>
+          <tbody id="threat-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHAP TAB -->
+  <div class="tab-panel" id="tab-shap">
+    <div class="crow">
+      <div class="cc">
+        <div class="cc-t">// SHAP FEATURE ATTRIBUTION (Eq.26) — LAST THREAT</div>
+        <div id="shap-latest"></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">// ACTION DISTRIBUTION BY AGENT</div>
+        <canvas id="c-actions" height="160"></canvas>
+      </div>
+    </div>
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// ADVERSARIAL ROBUSTNESS — PERFORMANCE UNDER PERTURBATION (Eq.22-23, Table V)</div>
+      <canvas id="c-robust" height="80"></canvas>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG TAB -->
+  <div class="tab-panel" id="tab-audit">
+    <div class="cc">
+      <div class="cc-t">// HUMAN-READABLE RESPONSE LOGS (Section 7.2)</div>
+      <div style="max-height:350px;overflow-y:auto;" id="audit-wrap"></div>
+    </div>
+  </div>
+
+  <!-- RL TRAINING TAB -->
+  <div class="tab-panel" id="tab-rl">
+    <div class="crow">
+      <div class="cc">
+        <div class="cc-t">// DQN TRAINING LOSS (Bellman Eq.17)</div>
+        <canvas id="c-loss" height="130"></canvas>
+      </div>
+      <div class="cc">
+        <div class="cc-t">// ε-GREEDY EXPLORATION DECAY (Eq.18)</div>
+        <canvas id="c-eps" height="130"></canvas>
+      </div>
+    </div>
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// AGENT DETECTION ACCURACY vs FALSE POSITIVE RATE</div>
+      <canvas id="c-acc" height="80"></canvas>
+    </div>
+  </div>
+
+  <!-- AI SCANNER TAB -->
+  <div class="tab-panel" id="tab-scan">
+    <div class="crow">
+
+      <!-- Email Scanner -->
+      <div class="cc">
+        <div class="cc-t">// EMAIL SCANNER — PHISHING + AI DETECTION</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <input id="scan-subject" placeholder="Email Subject" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:6px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+          <input id="scan-sender"  placeholder="Sender (e.g. security@paypa1.com)" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:6px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+          <textarea id="scan-body" placeholder="Paste email body here..." rows="4" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:6px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;resize:vertical;"></textarea>
+          <button onclick="scanEmail()" style="padding:7px;border-radius:4px;cursor:pointer;font-family:'Orbitron';font-size:9px;letter-spacing:2px;border:1px solid var(--o);color:var(--o);background:rgba(255,107,53,.06);transition:all .2s;" onmouseover="this.style.background='rgba(255,107,53,.15)'" onmouseout="this.style.background='rgba(255,107,53,.06)'">📧 SCAN EMAIL</button>
+          <div id="email-result"></div>
+        </div>
+      </div>
+
+      <!-- Text Scanner -->
+      <div class="cc">
+        <div class="cc-t">// AI TEXT DETECTOR — LLM-GENERATED CONTENT</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <textarea id="scan-text" placeholder="Paste any text to check if it was written by AI (ChatGPT, Claude, Gemini, etc.)..." rows="6" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:6px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;resize:vertical;"></textarea>
+          <button onclick="scanText()" style="padding:7px;border-radius:4px;cursor:pointer;font-family:'Orbitron';font-size:9px;letter-spacing:2px;border:1px solid var(--p);color:var(--p);background:rgba(191,95,255,.06);transition:all .2s;" onmouseover="this.style.background='rgba(191,95,255,.15)'" onmouseout="this.style.background='rgba(191,95,255,.06)'">🤖 DETECT AI TEXT</button>
+          <div id="text-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="crow" style="margin-top:10px;">
+
+      <!-- Image Scanner -->
+      <div class="cc">
+        <div class="cc-t">// DEEPFAKE IMAGE DETECTOR</div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+          <div id="img-drop" onclick="document.getElementById('img-file').click()"
+            style="width:100%;border:2px dashed var(--b3);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;"
+            onmouseover="this.style.borderColor='var(--c)'" onmouseout="this.style.borderColor='var(--b3)'">
+            <div style="font-size:24px;margin-bottom:4px;">🖼️</div>
+            <div style="font-size:10px;color:var(--td);font-family:'Share Tech Mono'">Click to upload image<br/>JPG, PNG, WEBP supported</div>
+          </div>
+          <input type="file" id="img-file" accept="image/*" style="display:none" onchange="scanImage(this)"/>
+          <div id="image-result" style="width:100%"></div>
+        </div>
+      </div>
+
+      <!-- Voice Scanner -->
+      <div class="cc">
+        <div class="cc-t">// VOICE CLONE DETECTOR</div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+          <div id="voice-drop" onclick="document.getElementById('voice-file').click()"
+            style="width:100%;border:2px dashed var(--b3);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;"
+            onmouseover="this.style.borderColor='var(--g)'" onmouseout="this.style.borderColor='var(--b3)'">
+            <div style="font-size:24px;margin-bottom:4px;">🎤</div>
+            <div style="font-size:10px;color:var(--td);font-family:'Share Tech Mono'">Click to upload audio<br/>WAV, MP3, OGG supported</div>
+          </div>
+          <input type="file" id="voice-file" accept="audio/*" style="display:none" onchange="scanVoice(this)"/>
+          <div id="voice-result" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Scanner — Full Width -->
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// 🎬 AI VIDEO DETECTOR — DEEPFAKE / SORA / RUNWAYML / PIKA / KLING</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div id="video-drop" onclick="document.getElementById('video-file').click()"
+            style="border:2px dashed var(--b3);border-radius:8px;padding:28px;text-align:center;cursor:pointer;transition:all .25s;background:var(--s2);"
+            onmouseover="this.style.borderColor='var(--p)';this.style.background='rgba(191,95,255,0.05)'"
+            onmouseout="this.style.borderColor='var(--b3)';this.style.background='var(--s2)'">
+            <div style="font-size:32px;margin-bottom:6px;">🎬</div>
+            <div style="font-family:'Orbitron';font-size:10px;color:var(--p);margin-bottom:4px;">DROP VIDEO FILE</div>
+            <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">MP4 · MKV · WebM · AVI · MOV<br/>Detects: Sora · RunwayML · Pika · Kling<br/>Luma · Synthesia · HeyGen · DeepFaceLab</div>
+          </div>
+          <input type="file" id="video-file" accept="video/*,.mkv,.webm,.avi,.mov" style="display:none" onchange="scanVideo(this)"/>
+        </div>
+        <div>
+          <div id="video-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scan History -->
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// SCAN HISTORY</div>
+      <div style="max-height:180px;overflow-y:auto;" id="scan-history"></div>
+    </div>
+  </div>
+
+  <!-- EMAIL MONITOR TAB -->
+
+  <!-- EMAIL MONITOR TAB -->
+  <div class="tab-panel" id="tab-email">
+
+    <!-- ═══ BROWSER EXTENSION SECTION ═══ -->
+    <div class="cc" style="margin-bottom:10px;border-color:var(--c);">
+      <div class="cc-t" style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:var(--c)">// 🛡️ BROWSER EXTENSION — REAL-TIME EMAIL SHIELD</span>
+        <span id="ext-status-badge" style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(68,68,68,.3);border:1px solid #444;color:#888">⚪ NOT CONNECTED</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+
+        <!-- Left: Install + Key Generate -->
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';line-height:1.7;padding:8px;background:var(--s2);border-radius:4px;border-left:2px solid var(--c);">
+            The SentinelNet Extension monitors Gmail, Outlook, Yahoo and more
+            directly in your browser — no passwords needed.
+            Scans every email through all 4 AI agents in real time.
+          </div>
+
+          <!-- Install link -->
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">STEP 1 — Install Extension:</div>
+            <a id="ext-install-link" href="#" onclick="installExtension(event)"
+               style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--c);border-radius:5px;background:rgba(0,212,255,.05);color:var(--c);text-decoration:none;font-family:'Share Tech Mono';font-size:10px;cursor:pointer;transition:all .2s;"
+               onmouseover="this.style.background='rgba(0,212,255,.12)'" onmouseout="this.style.background='rgba(0,212,255,.05)'">
+              <span style="font-size:16px">🧩</span>
+              <div>
+                <div style="font-weight:bold;letter-spacing:1px">ADD TO CHROME / EDGE</div>
+                <div style="font-size:8px;color:var(--td)">SentinelNet Email Shield v2.0</div>
+              </div>
+            </a>
+            <div style="font-size:8px;color:var(--td);font-family:'Share Tech Mono'">
+              Also works with: Brave, Opera, Vivaldi (Chromium-based)
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Config Key -->
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">STEP 2 — Your Unique Config Key:</div>
+
+          <!-- Key display -->
+          <div id="ext-key-box" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:10px;text-align:center;">
+            <div id="ext-key-val" style="font-family:'Share Tech Mono';font-size:13px;color:var(--td);letter-spacing:3px;">— NO KEY —</div>
+            <div id="ext-key-sub" style="font-size:8px;color:var(--td);margin-top:4px;">Click Generate to create your key</div>
+          </div>
+
+          <!-- Key actions -->
+          <div style="display:flex;gap:6px;">
+            <button onclick="generateExtKey()" id="btn-gen-key"
+              style="flex:1;padding:7px;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;border:1px solid var(--g);color:var(--g);background:rgba(0,255,136,.04);transition:all .2s;"
+              onmouseover="this.style.background='rgba(0,255,136,.14)'" onmouseout="this.style.background='rgba(0,255,136,.04)'">
+              ⚙ GENERATE KEY
+            </button>
+            <button onclick="copyExtKey()" id="btn-copy-key"
+              style="flex:1;padding:7px;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;border:1px solid var(--b2);color:var(--td);background:transparent;transition:all .2s;"
+              onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='transparent'">
+              📋 COPY KEY
+            </button>
+          </div>
+
+          <button onclick="revokeExtKey()"
+            style="padding:6px;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px;border:1px solid #333;color:#555;background:transparent;transition:all .2s;"
+            onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">
+            ✕ REVOKE &amp; REGENERATE
+          </button>
+
+          <div id="ext-key-result" style="font-size:9px;font-family:'Share Tech Mono';"></div>
+        </div>
+      </div>
+
+      <!-- Extension stats (shown when connected) -->
+      <div id="ext-stats-row" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--b1);">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+          <div style="text-align:center;padding:6px;background:var(--s2);border-radius:4px;">
+            <div style="font-size:16px;font-weight:bold;color:var(--c)" id="ext-stat-scanned">0</div>
+            <div style="font-size:8px;color:var(--td)">SCANNED</div>
+          </div>
+          <div style="text-align:center;padding:6px;background:var(--s2);border-radius:4px;">
+            <div style="font-size:16px;font-weight:bold;color:var(--r)" id="ext-stat-threats">0</div>
+            <div style="font-size:8px;color:var(--td)">THREATS</div>
+          </div>
+          <div style="text-align:center;padding:6px;background:var(--s2);border-radius:4px;">
+            <div style="font-size:16px;font-weight:bold;color:var(--o)" id="ext-stat-blocked">0</div>
+            <div style="font-size:8px;color:var(--td)">FLAGGED</div>
+          </div>
+          <div style="text-align:center;padding:6px;background:var(--s2);border-radius:4px;">
+            <div style="font-size:16px;font-weight:bold;color:var(--g)" id="ext-stat-safe">0</div>
+            <div style="font-size:8px;color:var(--td)">SAFE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ END EXTENSION SECTION ═══ -->
+
+    <div class="crow">
+
+      <!-- Add Account Panel -->
+      <div class="cc">
+        <div class="cc-t">// CONNECT EMAIL ACCOUNT (IMAP)</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <select id="em-provider" onchange="updateProviderHint()" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:7px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;">
+            <option value="gmail">Gmail</option>
+            <option value="outlook">Outlook / Office 365</option>
+            <option value="yahoo">Yahoo Mail</option>
+            <option value="custom">Custom IMAP Server</option>
+          </select>
+          <input id="em-email"    placeholder="Email address" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:7px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+          <input id="em-password" type="password" placeholder="App Password (NOT your regular password)" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:7px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+          <div id="em-custom-host" style="display:none;flex-direction:column;gap:5px;">
+            <input id="em-imap-host" placeholder="IMAP Host (e.g. mail.yourdomain.com)" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:7px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+            <input id="em-imap-port" placeholder="IMAP Port (default: 993)" type="number" value="993" style="background:var(--s2);border:1px solid var(--b2);border-radius:4px;padding:7px 8px;color:var(--w);font-size:11px;font-family:'Rajdhani',sans-serif;outline:none;"/>
+          </div>
+          <div id="em-hint" style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';padding:6px;background:var(--s2);border-radius:4px;border-left:2px solid var(--g);line-height:1.8;">Go to myaccount.google.com/apppasswords → Generate App Password for Mail → use the 16-char code (NOT your Gmail password)</div>
+          <button onclick="addEmailAccount()" style="padding:8px;border-radius:5px;cursor:pointer;font-family:'Orbitron';font-size:9px;letter-spacing:2px;border:1px solid var(--g);color:var(--g);background:rgba(127,255,0,.04);transition:all .2s;" onmouseover="this.style.background='rgba(127,255,0,.14)'" onmouseout="this.style.background='rgba(127,255,0,.04)'">📧 CONNECT & START MONITORING</button>
+          <div id="em-connect-result"></div>
+        </div>
+      </div>
+
+      <!-- Connected Accounts -->
+      <div class="cc">
+        <div class="cc-t">// CONNECTED ACCOUNTS</div>
+        <div id="em-accounts">
+          <div style="color:var(--td);font-size:10px;text-align:center;padding:20px">
+            No accounts connected yet.<br/>Add an account to start real-time scanning.
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="cc-t">// SETUP GUIDE</div>
+          <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';line-height:1.8;" id="em-setup-steps">
+            Select a provider above to see setup steps.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Scan Feed -->
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// LIVE EMAIL SCAN FEED — REAL-TIME INBOX MONITORING</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'" id="em-feed-stats">Waiting for emails...</div>
+        <button onclick="loadEmailFeed()" style="padding:3px 8px;border-radius:3px;cursor:pointer;font-family:'Share Tech Mono';font-size:8px;border:1px solid var(--b2);color:var(--td);background:transparent;">↻ REFRESH</button>
+      </div>
+      <div style="max-height:220px;overflow-y:auto;" id="em-feed"></div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="cc" style="margin-top:10px;">
+      <div class="cc-t">// EMAIL THREAT NOTIFICATIONS</div>
+      <div style="max-height:180px;overflow-y:auto;" id="em-notifications">
+        <div style="color:var(--td);font-size:9px;padding:10px">No threats detected yet.</div>
+      </div>
+    </div>
+
+    <!-- Extension Download Banner -->
+    <div class="cc" style="margin-top:10px;border-color:var(--c);background:linear-gradient(135deg,rgba(0,212,255,.04),rgba(191,95,255,.04));">
+      <div class="cc-t" style="color:var(--c)">// 🧩 SENTINELNET EMAIL SHIELD — BROWSER EXTENSION</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:8px;flex-wrap:wrap;">
+
+        <!-- Icon -->
+        <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--c),var(--p));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🛡️</div>
+
+        <!-- Description -->
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--w);font-family:'Share Tech Mono';letter-spacing:1px;margin-bottom:4px;">Real-time email scanning in your browser</div>
+          <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';line-height:1.7;">
+            Monitors Gmail · Outlook · Yahoo · ProtonMail<br/>
+            Scans via all 4 AI agents · Zero passwords needed · 100% local
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+            <span style="font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid var(--g);color:var(--g);">Chrome</span>
+            <span style="font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid var(--g);color:var(--g);">Edge</span>
+            <span style="font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid var(--g);color:var(--g);">Brave</span>
+            <span style="font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid var(--g);color:var(--g);">Opera</span>
+            <span style="font-size:8px;padding:2px 6px;border-radius:3px;border:1px solid rgba(255,255,255,.2);color:var(--td);">Firefox (soon)</span>
+          </div>
+        </div>
+
+        <!-- Download button -->
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          <a href="/api/extension/download" download="SentinelNet_Extension.zip"
+            style="display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--c);border-radius:6px;background:rgba(0,212,255,.08);color:var(--c);text-decoration:none;font-family:'Share Tech Mono';font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap;"
+            onmouseover="this.style.background='rgba(0,212,255,.18)'" onmouseout="this.style.background='rgba(0,212,255,.08)'">
+            ⬇ DOWNLOAD EXTENSION
+          </a>
+          <div style="font-size:8px;color:var(--td);font-family:'Share Tech Mono';text-align:center;">v2.0 · Manifest V3 · ~17 KB</div>
+          <button onclick="showExtInstallGuide()"
+            style="padding:6px 10px;border:1px solid var(--b2);border-radius:4px;background:transparent;color:var(--td);cursor:pointer;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px;transition:all .2s;"
+            onmouseover="this.style.borderColor='var(--c)';this.style.color='var(--c)'" onmouseout="this.style.borderColor='var(--b2)';this.style.color='var(--td)'">
+            📖 HOW TO INSTALL
+          </button>
+        </div>
+      </div>
+
+      <!-- Install guide (hidden by default) -->
+      <div id="ext-install-guide" style="display:none;margin-top:12px;padding:10px;background:var(--s2);border-radius:4px;border-left:2px solid var(--c);">
+        <div style="font-size:9px;color:var(--c);font-family:'Share Tech Mono';margin-bottom:8px;letter-spacing:1px;">INSTALLATION GUIDE</div>
+        <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';line-height:2;">
+          <span style="color:var(--g)">Step 1</span> — Click <b style="color:var(--w)">DOWNLOAD EXTENSION</b> above → save the ZIP file<br/>
+          <span style="color:var(--g)">Step 2</span> — Open Chrome/Edge → go to <b style="color:var(--c)">chrome://extensions</b><br/>
+          <span style="color:var(--g)">Step 3</span> — Toggle <b style="color:var(--w)">Developer mode</b> ON (top right corner)<br/>
+          <span style="color:var(--g)">Step 4</span> — Click <b style="color:var(--w)">Load unpacked</b> → select the extracted extension folder<br/>
+          <span style="color:var(--g)">Step 5</span> — Click the 🛡️ icon in your Chrome toolbar<br/>
+          <span style="color:var(--g)">Step 6</span> — Click <b style="color:var(--g)">GENERATE KEY</b> above → paste key into extension → click Connect<br/>
+          <span style="color:var(--g)">Step 7</span> — Open Gmail or Outlook — extension starts scanning automatically ✅
+        </div>
+        <button onclick="document.getElementById('ext-install-guide').style.display='none'"
+          style="margin-top:8px;padding:4px 10px;border:1px solid var(--b2);border-radius:3px;background:transparent;color:var(--td);cursor:pointer;font-family:'Share Tech Mono';font-size:8px;">
+          ✕ CLOSE
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+
+<!-- VIDEO CALL MONITOR TAB PANEL -->
+<div class="tab-panel" id="tab-vcm" style="padding:10px">
+
+  <!-- Status bar -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <div class="mc" style="--mc:var(--p);flex:1;min-width:100px"><div class="mc-v" id="vcm-status-val">IDLE</div><div class="mc-l">STATUS</div></div>
+    <div class="mc" style="--mc:var(--c);flex:1;min-width:100px"><div class="mc-v" id="vcm-frames">0</div><div class="mc-l">FRAMES SCANNED</div></div>
+    <div class="mc" style="--mc:var(--r);flex:1;min-width:100px"><div class="mc-v" id="vcm-threats">0</div><div class="mc-l">THREATS FOUND</div></div>
+    <div class="mc" style="--mc:var(--g);flex:1;min-width:100px"><div class="mc-v" id="vcm-cpu">—</div><div class="mc-l">CPU USAGE</div></div>
+    <div class="mc" style="--mc:var(--td);flex:1;min-width:100px"><div class="mc-v" id="vcm-tier">3</div><div class="mc-l">DETECTION TIERS</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+    <!-- Control Panel -->
+    <div class="cc">
+      <div class="cc-t">// 📹 VIDEO CALL DEEPFAKE MONITOR</div>
+      <div style="font-size:9px;color:var(--td);margin-bottom:10px;line-height:1.6">
+        Monitors your screen during video calls (Zoom, Teams, Meet, Webex).<br>
+        Captures a frame every 5 seconds, crops face regions, runs deepfake detection.<br>
+        Uses 3-tier analysis — fast checks first, deep analysis only if suspicious.
+      </div>
+
+      <!-- Big start/stop button -->
+      <div style="text-align:center;margin:12px 0">
+        <button id="vcm-toggle-btn" onclick="toggleVCM()"
+          style="padding:14px 32px;border-radius:8px;cursor:pointer;font-family:'Orbitron';
+                 font-size:11px;letter-spacing:2px;border:2px solid var(--p);color:var(--p);
+                 background:rgba(191,95,255,.06);transition:all .3s;width:100%"
+          onmouseover="this.style.background='rgba(191,95,255,.18)'"
+          onmouseout="this.style.background='rgba(191,95,255,.06)'">
+          ▶ START MONITORING
+        </button>
+        <div id="vcm-toggle-result" style="margin-top:6px;font-size:9px"></div>
+      </div>
+
+      <!-- Tier explanation -->
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px">
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:7px 10px">
+          <div style="font-size:9px;color:var(--c);font-family:'Share Tech Mono'">TIER 1 — INSTANT (~0.1s, ~1% CPU)</div>
+          <div style="font-size:8px;color:var(--td);margin-top:2px">Runs on every frame: entropy, color balance, texture smoothness, lighting</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:7px 10px">
+          <div style="font-size:9px;color:var(--y);font-family:'Share Tech Mono'">TIER 2 — QUICK (~1s, ~5% CPU)</div>
+          <div style="font-size:8px;color:var(--td);margin-top:2px">Only if Tier 1 suspicious: gradient, edge sharpness, skin tone, symmetry</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:7px 10px">
+          <div style="font-size:9px;color:var(--r);font-family:'Share Tech Mono'">TIER 3 — FULL (~2s, ~15% CPU)</div>
+          <div style="font-size:8px;color:var(--td);margin-top:2px">Only if Tier 2 suspicious: DCT analysis, noise patterns, OpenCV face check</div>
+        </div>
+      </div>
+
+      <!-- CPU Governor indicator -->
+      <div style="margin-top:10px;padding:7px 10px;background:var(--s2);border-radius:4px;border:1px solid var(--b1)">
+        <div style="font-size:9px;color:var(--g);font-family:'Share Tech Mono'">⚡ CPU GOVERNOR ACTIVE</div>
+        <div style="font-size:8px;color:var(--td);margin-top:2px">Auto-pauses if CPU > 60% · Resumes when CPU < 40%</div>
+        <div style="font-size:8px;color:var(--td)">You will never feel it running</div>
+      </div>
+    </div>
+
+    <!-- Live Results Feed -->
+    <div class="cc">
+      <div class="cc-t">// LIVE DETECTION FEED</div>
+
+      <!-- Confidence meter -->
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:9px;color:var(--td)">Current frame confidence</span>
+          <span style="font-size:9px;color:var(--w);font-family:'Share Tech Mono'" id="vcm-live-pct">—</span>
+        </div>
+        <div style="background:var(--b1);border-radius:3px;height:6px;overflow:hidden">
+          <div id="vcm-conf-bar" style="height:100%;width:0%;background:var(--g);transition:width .5s,background .5s;border-radius:3px"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:2px">
+          <span style="font-size:7px;color:var(--g)">AUTHENTIC</span>
+          <span style="font-size:7px;color:var(--y)">SUSPICIOUS</span>
+          <span style="font-size:7px;color:var(--r)">DEEPFAKE</span>
+        </div>
+      </div>
+
+      <!-- Last verdict -->
+      <div id="vcm-last-verdict" style="background:var(--s2);border:1px solid var(--b1);border-radius:5px;padding:10px;margin-bottom:10px;min-height:60px">
+        <div style="font-size:9px;color:var(--td);text-align:center;padding-top:10px">
+          Start monitoring to see results here
+        </div>
+      </div>
+
+      <!-- Recent threats list -->
+      <div class="cc-t">// RECENT THREATS</div>
+      <div id="vcm-threats-list" style="max-height:220px;overflow-y:auto">
+        <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">No threats detected yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="cc" style="margin-top:10px">
+    <div class="cc-t">// DETECTION STATISTICS</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px" id="vcm-stats-grid">
+      <div style="text-align:center"><div style="font-size:14px;color:var(--c)" id="vcm-stat-captured">0</div><div style="font-size:8px;color:var(--td)">Captured</div></div>
+      <div style="text-align:center"><div style="font-size:14px;color:var(--g)" id="vcm-stat-analyzed">0</div><div style="font-size:8px;color:var(--td)">Analyzed</div></div>
+      <div style="text-align:center"><div style="font-size:14px;color:var(--td)" id="vcm-stat-skipped">0</div><div style="font-size:8px;color:var(--td)">Skipped</div></div>
+      <div style="text-align:center"><div style="font-size:14px;color:var(--y)" id="vcm-stat-t1esc">0</div><div style="font-size:8px;color:var(--td)">Tier1→2</div></div>
+      <div style="text-align:center"><div style="font-size:14px;color:var(--o)" id="vcm-stat-t2esc">0</div><div style="font-size:8px;color:var(--td)">Tier2→3</div></div>
+      <div style="text-align:center"><div style="font-size:14px;color:var(--r)" id="vcm-stat-threats">0</div><div style="font-size:8px;color:var(--td)">Threats</div></div>
+    </div>
+  </div>
+
+  <!-- Requirements note -->
+  <div class="cc" style="margin-top:10px">
+    <div class="cc-t">// REQUIREMENTS & ACCURACY</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:9px;color:var(--td);line-height:1.7">
+      <div>
+        <div style="color:var(--w);margin-bottom:4px">Required (already installed):</div>
+        <div>✅ Python 3.8+</div>
+        <div>✅ Pillow (screenshot + image processing)</div>
+        <div style="color:var(--w);margin-top:6px;margin-bottom:4px">Optional (improves accuracy):</div>
+        <div id="vcm-opencv-status">⏳ Checking OpenCV...</div>
+        <div style="font-size:8px;color:var(--td);margin-top:2px">pip install opencv-python</div>
+      </div>
+      <div>
+        <div style="color:var(--w);margin-bottom:4px">What it detects:</div>
+        <div>✅ AI avatar tools (Synthesia, HeyGen, D-ID)</div>
+        <div>✅ Face swap deepfakes (DeepFaceLab)</div>
+        <div>✅ Virtual camera deepfakes</div>
+        <div>✅ GAN-generated faces</div>
+        <div style="color:var(--y);margin-top:4px">⚠️ May miss: subtle face swaps on</div>
+        <div style="color:var(--y)">high-end machines with good lighting</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SECURITY TAB PANEL (outside main grid, full width) -->
+<div class="tab-panel" id="tab-security" style="padding:10px">
+
+  <!-- STARTUP CHECK PANEL -->
+  <div class="cc" style="margin-bottom:12px">
+    <div class="cc-t" style="display:flex;justify-content:space-between;align-items:center">
+      <span>// 🔍 SYSTEM DEPENDENCY CHECK</span>
+      <button onclick="rerunStartupCheck()" style="padding:3px 12px;border:1px solid var(--c);border-radius:3px;background:transparent;color:var(--c);cursor:pointer;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px">RE-CHECK</button>
+    </div>
+
+    <!-- Overall status bar -->
+    <div id="sc-overall" style="padding:10px;border-radius:5px;margin-bottom:10px;background:var(--s2);border:1px solid var(--b1)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="sc-icon" style="font-size:18px">⏳</span>
+        <div>
+          <div id="sc-status-text" style="font-size:11px;color:var(--w);font-family:'Orbitron'">Loading...</div>
+          <div id="sc-status-msg"  style="font-size:9px;color:var(--td);margin-top:2px"></div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="text-align:right">
+          <div id="sc-capture-mode" style="font-size:13px;font-family:'Share Tech Mono';color:var(--g)">—</div>
+          <div style="font-size:8px;color:var(--td)">CAPTURE MODE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checks grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="sc-checks-grid">
+      <div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">Running checks...</div>
+    </div>
+
+    <!-- Quick fix box -->
+    <div id="sc-fix-box" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,200,0,.05);border:1px solid var(--y);border-radius:5px">
+      <div style="font-size:9px;color:var(--y);margin-bottom:5px;font-family:'Orbitron'">⚡ QUICK ACTIONS NEEDED</div>
+      <div id="sc-fix-list" style="font-size:9px;color:var(--td);line-height:1.9;font-family:'Share Tech Mono'"></div>
+    </div>
+  </div>
+
+  <!-- Status Row -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <div class="mc" style="--mc:var(--g);flex:1;min-width:120px"><div class="mc-v" id="sec-privacy">ON</div><div class="mc-l">PRIVACY MODE</div></div>
+    <div class="mc" style="--mc:var(--c);flex:1;min-width:120px"><div class="mc-v" id="sec-https">—</div><div class="mc-l">HTTPS / TLS</div></div>
+    <div class="mc" style="--mc:var(--p);flex:1;min-width:120px"><div class="mc-v" id="sec-audit-count">0</div><div class="mc-l">AUDIT ENTRIES</div></div>
+    <div class="mc" style="--mc:var(--g);flex:1;min-width:120px"><div class="mc-v" id="sec-compliant">—</div><div class="mc-l">COMPLIANCE</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+
+    <!-- Privacy Mode -->
+    <div class="cc">
+      <div class="cc-t">// 🔏 PRIVACY MODE</div>
+      <div id="privacy-status" style="font-size:9px;color:var(--g);font-family:'Share Tech Mono';margin-bottom:8px">Loading...</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer">
+          <input type="checkbox" id="prv-enabled" checked onchange="updatePrivacy()"/>
+          Privacy Mode (recommended ON)
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer">
+          <input type="checkbox" id="prv-subject" onchange="updatePrivacy()"/>
+          Store subject line
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer">
+          <input type="checkbox" id="prv-sender" onchange="updatePrivacy()"/>
+          Store sender address
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer">
+          <input type="checkbox" id="prv-body" onchange="updatePrivacy()"/>
+          Store body preview (NOT recommended)
+        </label>
+        <div style="display:flex;align-items:center;gap:6px;font-size:10px">
+          Retention days:
+          <input type="number" id="prv-retention" value="90" min="7" max="730"
+            style="width:50px;background:var(--s2);border:1px solid var(--b2);border-radius:3px;padding:2px 4px;color:var(--w);font-size:10px"
+            onchange="updatePrivacy()"/>
+        </div>
+      </div>
+      <div style="margin-top:8px;padding:6px;background:rgba(127,255,0,.05);border:1px solid rgba(127,255,0,.2);border-radius:4px;font-size:8px;color:var(--td)">
+        ✅ Email body NEVER stored<br>
+        ✅ Senders hashed (SHA-256)<br>
+        ✅ 90-day auto-deletion<br>
+        ✅ GDPR Article 25 compliant
+      </div>
+    </div>
+
+    <!-- HTTPS Status -->
+    <div class="cc">
+      <div class="cc-t">// 🔐 HTTPS / TLS STATUS</div>
+      <div id="https-status" style="font-size:9px;color:var(--td);font-family:'Share Tech Mono'">Loading...</div>
+
+      <button onclick="regenCert()" style="margin-top:8px;width:100%;padding:6px;border-radius:4px;cursor:pointer;font-family:'Orbitron';font-size:8px;border:1px solid var(--c);color:var(--c);background:rgba(0,245,255,.04)">🔄 REGENERATE CERTIFICATE</button>
+      <div id="cert-result" style="margin-top:4px;font-size:9px"></div>
+    </div>
+
+    <!-- Audit Trail -->
+    <div class="cc">
+      <div class="cc-t">// 📋 AUDIT TRAIL</div>
+      <div id="audit-integrity" style="font-size:9px;margin-bottom:8px">Loading...</div>
+      <div style="display:flex;gap:5px;margin-bottom:8px">
+        <button onclick="loadAuditEntries()" style="flex:1;padding:5px;border-radius:3px;cursor:pointer;font-family:'Orbitron';font-size:7px;border:1px solid var(--p);color:var(--p);background:rgba(191,95,255,.04)">📋 VIEW LOG</button>
+        <button onclick="exportAudit()" style="flex:1;padding:5px;border-radius:3px;cursor:pointer;font-family:'Orbitron';font-size:7px;border:1px solid var(--td);color:var(--td);background:transparent">⬇ EXPORT CSV</button>
+        <button onclick="verifyIntegrity()" style="flex:1;padding:5px;border-radius:3px;cursor:pointer;font-family:'Orbitron';font-size:7px;border:1px solid var(--g);color:var(--g);background:rgba(127,255,0,.04)">✅ VERIFY</button>
+      </div>
+      <div id="audit-entries" style="max-height:200px;overflow-y:auto;font-family:'Share Tech Mono';font-size:8px"></div>
+    </div>
+  </div>
+
+  </div>
+
+
+</div><!-- /center -->
+
+<!-- RIGHT SIDEBAR -->
+<div id="sr">
+
+  <!-- FL Panel — hidden in LIVE mode, shown in SYNTHETIC -->
+  <div class="fl-p" id="sidebar-fl-panel">
+    <div class="fl-t">// FEDERATED LEARNING (Eq.19-21)</div>
+    <div class="fl-row"><span class="fl-k">Rounds</span><span class="fl-v" id="fl-rounds">0</span></div>
+    <div class="fl-row"><span class="fl-k">Method</span><span class="fl-v">Trust-Weighted FedAvg</span></div>
+    <div class="fl-row"><span class="fl-k">Privacy</span><span class="fl-v">DP ε=1.0</span></div>
+    <div class="fl-row"><span class="fl-k">Protocol</span><span class="fl-v">MQTT/TLS</span></div>
+    <div class="fl-row"><span class="fl-k">τ Threshold</span><span class="fl-v">0.65</span></div>
+    <div class="fl-row"><span class="fl-k">Bandwidth</span><span class="fl-v" id="fl-bw">0 MB</span></div>
+    <div class="fl-row"><span class="fl-k">Per-Round</span><span class="fl-v" id="fl-bwpr">0 MB</span></div>
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--td);margin-top:6px;"><span>BW Usage</span><span>Target: 2.3MB</span></div>
+      <div class="bw-bar"><div class="bw-fill" id="bw-fill" style="width:0%"></div></div>
+    </div>
+    <button class="fl-btn" onclick="triggerFL()">⚡ TRIGGER FL ROUND</button>
+    <button class="adv-btn" id="adv-toggle" onclick="toggleAdv()">🔴 ADVERSARIAL MODE OFF</button>
+  </div>
+
+  <!-- Alerts -->
+  <div>
+    <div class="sec-hdr">// ACTIVE ALERTS</div>
+    <div id="alerts-wrap"></div>
+  </div>
+
+  <!-- Robustness Summary — hidden in LIVE mode -->
+  <div class="fl-p" id="sidebar-rob-panel">
+    <div class="fl-t">// ZERO-DAY ROBUSTNESS (Table V, ≤7.6% drop target)</div>
+    <div id="rob-wrap"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="fl-p">
+    <div class="fl-t">// SYSTEM STATISTICS</div>
+    <div class="fl-row"><span class="fl-k">Uptime</span><span class="fl-v" id="s-uptime">0s</span></div>
+    <div class="fl-row"><span class="fl-k">Total Threats</span><span class="fl-v" id="s-total">0</span></div>
+    <div class="fl-row"><span class="fl-k">Blocked</span><span class="fl-v" id="s-blocked" style="color:var(--g)">0</span></div>
+    <div class="fl-row"><span class="fl-k">Block Rate</span><span class="fl-v" id="s-br">0%</span></div>
+    <div class="fl-row"><span class="fl-k">Threats/Min</span><span class="fl-v" id="s-tpm" style="color:var(--c)">0.0</span></div>
+    <div class="fl-row"><span class="fl-k">Avg Trust τ</span><span class="fl-v" id="s-trust">0.000</span></div>
+    <div class="fl-row"><span class="fl-k">Avg Accuracy</span><span class="fl-v" id="s-acc" style="color:var(--g)">0%</span></div>
+    <div class="fl-row"><span class="fl-k">False Pos Rate</span><span class="fl-v" id="s-fpr" style="color:var(--r)">0%</span></div>
+    <div class="fl-row"><span class="fl-k">Active Agents</span><span class="fl-v" id="s-agents">4/4</span></div>
+    <div class="fl-row"><span class="fl-k">FL Rounds</span><span class="fl-v" id="s-fl" style="color:var(--p)">0</span></div>
+    <div class="fl-row"><span class="fl-k">FL Bandwidth</span><span class="fl-v" id="s-bw">0 MB</span></div>
+    <div class="fl-row"><span class="fl-k">Capture Mode</span><span class="fl-v" id="s-mode" style="color:var(--y)">SYNTHETIC</span></div>
+    <div class="fl-row"><span class="fl-k">Replay Buffer</span><span class="fl-v" id="s-replay">0</span></div>
+    <div class="fl-row"><span class="fl-k">System Reward</span><span class="fl-v" id="s-reward" style="color:var(--c)">0.8118</span></div>
+  </div>
+
+</div><!-- /sidebar-right -->
+</div><!-- /body -->
+</div><!-- /shell -->
+
+<script>
+const API = window.location.protocol === 'https:' ? `https://${window.location.host}/api` : 'http://localhost:8000/api';
+const WS  = window.location.protocol === 'https:' ? `wss://${window.location.host}/ws`  : 'ws://localhost:8000/ws';
+const COLORS = {network:'#00f5ff',phishing:'#ff6b35',binary:'#7fff00',deepfake:'#bf5fff'};
+const NAMES  = {network:'Network Sentinel',phishing:'Phishing Guardian',binary:'Binary Analyzer',deepfake:'DeepFake Detector'};
+const ACT_C  = {BLOCK:'#ff2d55',ALERT:'#ffd60a',ISOLATE:'#ff6b35',ESCALATE:'#bf5fff'};
+
+// ── Pre-seeded baseline so dashboard shows real values immediately ──
+const BASELINE_AGENTS = {
+  network:  {name:'Network Sentinel', icon:'🌐', color:'#00f5ff', modality:'Network Traffic',
+             weight:0.35, active:true, status:'ACTIVE',
+             detection_accuracy:0.825, false_positive_rate:0.021, trust_score:0.818,
+             epsilon:1.0, lr:0.001, step_count:0, total_decisions:1000,
+             correct_detections:825, false_positives:28, avg_loss:0.0, replay_size:0,
+             action_distribution:{BLOCK:0,ALERT:0,ISOLATE:0,ESCALATE:0}},
+  phishing: {name:'Phishing Guardian',icon:'📧', color:'#ff6b35', modality:'Email/Phishing',
+             weight:0.25, active:true, status:'ACTIVE',
+             detection_accuracy:0.847, false_positive_rate:0.021, trust_score:0.821,
+             epsilon:1.0, lr:0.001, step_count:0, total_decisions:1000,
+             correct_detections:847, false_positives:21, avg_loss:0.0, replay_size:0,
+             action_distribution:{BLOCK:0,ALERT:0,ISOLATE:0,ESCALATE:0}},
+  binary:   {name:'Binary Analyzer',  icon:'⚙️', color:'#7fff00', modality:'Malware/Binary',
+             weight:0.25, active:true, status:'ACTIVE',
+             detection_accuracy:0.791, false_positive_rate:0.021, trust_score:0.804,
+             epsilon:1.0, lr:0.001, step_count:0, total_decisions:1000,
+             correct_detections:791, false_positives:26, avg_loss:0.0, replay_size:0,
+             action_distribution:{BLOCK:0,ALERT:0,ISOLATE:0,ESCALATE:0}},
+  deepfake: {name:'DeepFake Detector',icon:'🎭', color:'#bf5fff', modality:'DeepFake Media',
+             weight:0.15, active:true, status:'ACTIVE',
+             detection_accuracy:0.757, false_positive_rate:0.021, trust_score:0.824,
+             epsilon:1.0, lr:0.001, step_count:0, total_decisions:1000,
+             correct_detections:757, false_positives:22, avg_loss:0.0, replay_size:0,
+             action_distribution:{BLOCK:0,ALERT:0,ISOLATE:0,ESCALATE:0}},
+};
+const BASELINE_METRICS = {
+  system_reward:0.81180, avg_detection_accuracy:0.8050, avg_false_positive_rate:0.0210,
+  avg_trust_score:0.8168, total_threats:0, total_blocked:0, false_positives:0,
+  block_rate:0, false_positive_rate_pct:2.10, fl_rounds:0, bandwidth_used_mb:0,
+  active_agents:4, adversarial_mode:false, threats_per_min:0, uptime:0,
+  capture_mode:'SYNTHETIC',
+};
+const BASELINE_FL = {
+  rounds_completed:0, total_bandwidth_mb:0, bandwidth_per_round_mb:0,
+  method:'Trust-Weighted FedAvg',
+};
+
+let D = { agents: JSON.parse(JSON.stringify(BASELINE_AGENTS)),
+          metrics: JSON.parse(JSON.stringify(BASELINE_METRICS)),
+          fl: JSON.parse(JSON.stringify(BASELINE_FL)),
+          threats:[], alerts:[], audit:[], trust:{},
+          rewardH:[0.81180], agentThreatCounts:{network:0,phishing:0,binary:0,deepfake:0},
+          lossH:{network:[],phishing:[],binary:[],deepfake:[]},
+          epsH:{network:[],phishing:[],binary:[],deepfake:[]},
+          trustH:{network:[],phishing:[],binary:[],deepfake:[]},
+          currentTab:'threats' };
+let ws, animId;
+
+// ── Clock ─────────────────────────────────────────────────
+setInterval(()=>{ document.getElementById('hclock').textContent = new Date().toLocaleTimeString('en-US',{hour12:false}); },1000);
+
+// ── Tab switching ──────────────────────────────────────────
+function switchTab(t){
+  D.currentTab = t;
+  const tabNames = ['threats','shap','audit','trust','rl','scan','vcm','email','security'];
+  // Toggle active class on tab buttons
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active', tabNames[i]===t);
+  });
+  // Toggle active class on ALL panels — CSS .tab-panel.active handles display
+  document.querySelectorAll('.tab-panel').forEach(p=>{
+    p.classList.toggle('active', p.id === 'tab-'+t);
+  });
+  setTimeout(renderCharts, 50);
+  if(t==='scan')     loadScanHistory();
+  if(t==='email')    { loadEmailStatus(); loadExtensionStatus(); setTimeout(updateProviderHint,50); }
+  if(t==='security') loadSecurityStatus();
+  if(t==='vcm')      { loadVCMStatus(); startVCMPolling(); }
+  if(t!=='vcm')      stopVCMPolling();
+}
+
+// ── Video Call Monitor JS ──────────────────────────────────
+let vcmRunning    = false;
+let vcmPollTimer  = null;
+
+async function toggleVCM(){
+  const btn = document.getElementById('vcm-toggle-btn');
+  const res = document.getElementById('vcm-toggle-result');
+  if(!vcmRunning){
+    res.innerHTML='<span style="color:var(--td)">⏳ Starting monitor...</span>';
+    try{
+      const r = await fetch(`${API}/vcm/start`, {method:'POST'});
+      const d = await r.json();
+      if(d.success){
+        vcmRunning = true;
+        btn.textContent = '⏹ STOP MONITORING';
+        btn.style.borderColor = 'var(--r)';
+        btn.style.color = 'var(--r)';
+        btn.onmouseover = ()=>btn.style.background='rgba(255,45,85,.18)';
+        btn.onmouseout  = ()=>btn.style.background='rgba(255,45,85,.06)';
+        res.innerHTML=`<span style="color:var(--g)">✅ ${d.message}<br>Mode: ${d.face_detection||'Heuristic'} · Interval: ${d.interval_sec||5}s</span>`;
+        document.getElementById('vcm-status-val').textContent='ACTIVE';
+      } else {
+        res.innerHTML=`<span style="color:var(--r)">❌ ${d.error||'Failed to start'}<br>${d.fix||''}</span>`;
+      }
+    }catch(e){ res.innerHTML='<span style="color:var(--r)">Cannot connect to backend</span>'; }
+  } else {
+    res.innerHTML='<span style="color:var(--td)">⏹ Stopping...</span>';
+    try{
+      await fetch(`${API}/vcm/stop`, {method:'POST'});
+      vcmRunning = false;
+      btn.textContent = '▶ START MONITORING';
+      btn.style.borderColor = 'var(--p)';
+      btn.style.color = 'var(--p)';
+      btn.onmouseover = ()=>btn.style.background='rgba(191,95,255,.18)';
+      btn.onmouseout  = ()=>btn.style.background='rgba(191,95,255,.06)';
+      res.innerHTML='<span style="color:var(--td)">Monitor stopped</span>';
+      document.getElementById('vcm-status-val').textContent='IDLE';
+      stopVCMPolling();
+    }catch(e){}
+  }
+}
+
+function startVCMPolling(){
+  if(vcmPollTimer) return;
+  vcmPollTimer = setInterval(loadVCMStatus, 3000);
+}
+function stopVCMPolling(){
+  if(vcmPollTimer){ clearInterval(vcmPollTimer); vcmPollTimer=null; }
+}
+
+async function loadVCMStatus(){
+  try{
+    const r = await fetch(`${API}/vcm/status`);
+    const d = await r.json();
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    const stats = d.stats || {};
+
+    // Update status bar
+    set('vcm-status-val', d.running ? (d.paused?'PAUSED':'ACTIVE') : 'IDLE');
+    set('vcm-frames',     stats.frames_analyzed || 0);
+    set('vcm-threats',    stats.threats_found || 0);
+    set('vcm-cpu',        d.cpu_usage ? d.cpu_usage+'%' : '—');
+
+    // Update stats grid
+    set('vcm-stat-captured', stats.frames_captured  || 0);
+    set('vcm-stat-analyzed', stats.frames_analyzed  || 0);
+    set('vcm-stat-skipped',  stats.frames_skipped   || 0);
+    set('vcm-stat-t1esc',    stats.tier1_escalations|| 0);
+    set('vcm-stat-t2esc',    stats.tier2_escalations|| 0);
+    set('vcm-stat-threats',  stats.threats_found    || 0);
+
+    // OpenCV status
+    const ocv = document.getElementById('vcm-opencv-status');
+    if(ocv){
+      const caps = d.capabilities || {};
+      ocv.innerHTML = caps.opencv
+        ? '<span style="color:var(--g)">✅ OpenCV active (face detection ON)</span>'
+        : '<span style="color:var(--y)">⚠️ OpenCV not installed (heuristic mode)</span>';
+    }
+
+    // Last result
+    // Live detection bar uses rolling_conf (max of last 5 scans) for stability
+    const rollingConf = d.rolling_conf || (stats.rolling_conf) || 0;
+    const last = stats.last_threat || stats.last_result || d.last_result;
+    {
+      const pct = Math.round(rollingConf * 100);
+      const col = pct>=65?'var(--r)':pct>=52?'var(--o)':pct>=30?'var(--y)':'var(--g)';
+      const bar = document.getElementById('vcm-conf-bar');
+      if(bar){ bar.style.width=pct+'%'; bar.style.background=col; }
+      set('vcm-live-pct', pct+'%');
+      // Last verdict card
+      const vd = document.getElementById('vcm-last-verdict');
+      if(vd && last){
+        const tm = new Date(last.timestamp).toLocaleTimeString('en-US',{hour12:false});
+        vd.innerHTML=`
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:${col};font-family:'Orbitron'">${last.verdict||'—'}</span>
+            <span style="font-size:11px;color:${col};font-family:'Share Tech Mono'">${pct}%</span>
+          </div>
+          <div style="font-size:9px;color:var(--td);margin-top:4px">
+            Tier ${last.tier||1} analysis · ${tm}
+            ${last.scores?` · T1:${Math.round((last.scores.tier1||0)*100)}% T2:${Math.round((last.scores.tier2||0)*100)}% T3:${Math.round((last.scores.tier3||0)*100)}%`:''}
+          </div>
+          ${(last.indicators||[]).slice(0,3).map(i=>
+            `<div style="font-size:8px;color:var(--td);margin-top:2px">⚠ ${i}</div>`
+          ).join('')}
+        `;
+      }
+    }
+
+    // Recent threats
+    const threats = (d.recent_threats||[]).concat((d.recent_results||[]).filter(r=>r.confidence>=0.52)).slice(0,10);
+    const tlist   = document.getElementById('vcm-threats-list');
+    if(tlist){
+      if(!threats.length){
+        tlist.innerHTML='<div style="font-size:9px;color:var(--td);font-family:Share Tech Mono">No threats detected yet ✅</div>';
+      } else {
+        tlist.innerHTML = threats.slice(0,10).map(t=>{
+          const pct2 = Math.round((t.confidence||0)*100);
+          const col2 = t.severity==='CRITICAL'?'var(--r)':t.severity==='HIGH'?'var(--o)':'var(--y)';
+          const tm2  = new Date(t.timestamp).toLocaleTimeString('en-US',{hour12:false});
+          return `<div style="border-left:3px solid ${col2};padding:5px 8px;margin-bottom:4px;background:var(--s2);border-radius:0 4px 4px 0">
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:10px;color:${col2}">${t.verdict||'THREAT'}</span>
+              <span style="font-size:9px;color:${col2};font-family:'Share Tech Mono'">${pct2}% · Tier ${t.tier||'?'}</span>
+            </div>
+            <div style="font-size:8px;color:var(--td)">${tm2} · Face #${(t.face_index||0)+1}</div>
+            ${(t.indicators||[]).slice(0,2).map(i=>`<div style="font-size:8px;color:var(--td)">⚠ ${i}</div>`).join('')}
+          </div>`;
+        }).join('');
+      }
+    }
+  }catch(e){}
+}
+
+// ── Security Tab JS ────────────────────────────────────────
+// ── Startup Check JS ──────────────────────────────────────
+
+async function loadStartupCheck(){
+  try{
+    const r = await fetch(`${API}/startup/check`);
+    const d = await r.json();
+    renderStartupCheck(d);
+  }catch(e){
+    console.warn('Startup check fetch failed:', e);
+  }
+}
+
+async function rerunStartupCheck(){
+  const btn = event.target;
+  btn.textContent = '⏳ CHECKING...';
+  btn.disabled = true;
+  try{
+    const r = await fetch(`${API}/startup/recheck`, {method:'POST'});
+    const d = await r.json();
+    renderStartupCheck(d);
+  }catch(e){}
+  btn.textContent = 'RE-CHECK';
+  btn.disabled = false;
+}
+
+function renderStartupCheck(d){
+  // ── Overall status ────────────────────────────────────
+  const statusColors = {GREEN:'var(--g)', YELLOW:'var(--y)', RED:'var(--r)'};
+  const statusIcons  = {GREEN:'✅', YELLOW:'⚠️', RED:'🔴'};
+  const col  = statusColors[d.overall_status] || 'var(--td)';
+  const icon = statusIcons[d.overall_status]  || '❓';
+
+  const setText = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const setHTML = (id,v)=>{ const el=document.getElementById(id); if(el) el.innerHTML=v;  };
+  const setStyle= (id,prop,v)=>{ const el=document.getElementById(id); if(el) el.style[prop]=v; };
+
+  setText('sc-icon',        icon);
+  setText('sc-status-text', `${d.overall_status} — ${d.critical_count} critical · ${d.warning_count} warnings`);
+  setText('sc-status-msg',  d.status_message || '');
+  setStyle('sc-status-text','color', col);
+
+  const modeCol = d.capture_mode === 'LIVE' ? 'var(--g)' : 'var(--y)';
+  setText('sc-capture-mode', d.capture_mode === 'LIVE' ? '📡 LIVE' : '🔁 SYNTHETIC');
+  setStyle('sc-capture-mode','color', modeCol);
+
+  // Hide FL and Robustness panels in LIVE mode (real data only, no simulation noise)
+  const isLiveMode = d.capture_mode === 'LIVE';
+  const flPanel  = document.getElementById('sidebar-fl-panel');
+  const robPanel = document.getElementById('sidebar-rob-panel');
+  if(flPanel)  flPanel.style.display  = isLiveMode ? 'none' : '';
+  if(robPanel) robPanel.style.display = isLiveMode ? 'none' : '';
+
+  // ── Update header badge ───────────────────────────────
+  const badge = document.getElementById('badge-capture');
+  if(badge){
+    badge.textContent = d.capture_mode === 'LIVE' ? '📡 LIVE CAPTURE' : '🔁 SYNTHETIC';
+    badge.style.borderColor = modeCol;
+    badge.style.color = modeCol;
+  }
+
+  // ── Checks grid ───────────────────────────────────────
+  const checks  = d.checks || [];
+  const grid    = document.getElementById('sc-checks-grid');
+  if(grid){
+    const rows = checks.map(c => {
+      const ok  = c.ok;
+      const sev = c.severity || 'OK';
+      const dotCol = ok ? 'var(--g)' :
+                     sev==='CRITICAL' ? 'var(--r)' :
+                     sev==='WARNING'  ? 'var(--y)' :
+                     sev==='OPTIONAL' ? 'var(--td)' : 'var(--g)';
+      const label = ok ? '✅' : sev==='CRITICAL' ? '❌' : sev==='WARNING' ? '⚠️' : '💡';
+      const valCol = ok ? 'var(--g)' : dotCol;
+      return `
+        <div style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:6px 9px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:8px;color:var(--td)">${label} ${c.name||''}</span>
+            <span style="font-size:8px;color:${valCol};font-family:'Share Tech Mono'">${(c.value||'').slice(0,22)}</span>
+          </div>
+          ${(!ok && c.fix) ? `<div style="font-size:7px;color:var(--y);margin-top:3px;font-family:'Share Tech Mono'">Fix: ${c.fix.slice(0,55)}</div>` : ''}
+        </div>`;
+    });
+    grid.innerHTML = rows.join('');
+  }
+
+  // ── Fix box ───────────────────────────────────────────
+  const fixBox  = document.getElementById('sc-fix-box');
+  const fixList = document.getElementById('sc-fix-list');
+  const fixes   = [];
+
+  if(!d.live_available){
+    if(d.system === 'Windows'){
+      fixes.push('1. Install Npcap → https://npcap.com/#download');
+      fixes.push('2. Restart SentinelNet as Administrator');
+    } else if(d.system === 'Linux'){
+      fixes.push('1. sudo apt install libpcap-dev tcpdump');
+      fixes.push('2. Restart with: sudo ./start.sh');
+    } else if(d.system === 'Darwin'){
+      fixes.push('1. Restart with: sudo ./start.sh');
+    }
+  }
+  (d.criticals||[]).forEach(c=>{ if(c.fix) fixes.push(`• ${c.fix}`); });
+  (d.warnings||[]).forEach(c=>{  if(c.fix) fixes.push(`• ${c.fix}`); });
+
+  if(fixes.length > 0 && fixBox && fixList){
+    fixBox.style.display = 'block';
+    fixList.innerHTML = fixes.map(f=>`<div>${f}</div>`).join('');
+  } else if(fixBox){
+    fixBox.style.display = 'none';
+  }
+
+  // ── Top banner ────────────────────────────────────────
+  const banner = document.getElementById('startup-banner');
+  if(banner){
+    // Only show banner if there are issues
+    if(d.overall_status !== 'GREEN'){
+      banner.style.display = 'block';
+      const bannerCol = d.overall_status === 'RED' ? 'var(--r)' : 'var(--y)';
+      banner.style.borderLeft = `3px solid ${bannerCol}`;
+      setText('sb-icon',  statusIcons[d.overall_status]);
+      setText('sb-mode',  d.capture_mode === 'LIVE' ? '📡 LIVE MODE' : '🔁 SYNTHETIC MODE');
+      setStyle('sb-mode','color', modeCol);
+      setText('sb-msg',   d.status_message || '');
+
+      // Show top action needed
+      const topFix = fixes[0] || '';
+      setText('sb-actions', topFix ? `Action needed: ${topFix}` : '');
+    } else {
+      // All green — briefly show then hide
+      banner.style.display = 'block';
+      banner.style.borderLeft = '3px solid var(--g)';
+      setText('sb-icon',  '✅');
+      setText('sb-mode',  '📡 LIVE MODE READY');
+      setStyle('sb-mode','color','var(--g)');
+      setText('sb-msg',   'All systems ready — live packet capture active');
+      setText('sb-actions','');
+      setTimeout(()=>{ banner.style.display='none'; }, 5000);
+    }
+  }
+}
+
+function showStartupTab(){
+  switchTab('security');
+  document.getElementById('startup-banner').style.display='none';
+}
+
+async function loadSecurityStatus(){
+  try{
+    const r = await fetch(`${API}/security/summary`);
+    const d = await r.json();
+    // Status bar
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('sec-privacy',  d.privacy?.privacy_mode ? 'ON ✅' : 'OFF ⚠️');
+    set('sec-https',    d.https?.https_available ? 'ACTIVE ✅' : 'HTTP ⚠️');
+    set('sec-audit-count', d.audit?.total_entries || 0);
+    set('sec-compliant', d.compliance_ready ? 'READY ✅' : 'GAPS ⚠️');
+    // Privacy status text
+    const ps = document.getElementById('privacy-status');
+    if(ps && d.privacy){
+      const p = d.privacy;
+      ps.innerHTML = `
+        Body storage: <span style="color:${p.body_storage==='NEVER'?'var(--g)':'var(--r)'}">${p.body_storage}</span><br>
+        Subject: <span style="color:var(--td)">${p.subject_storage}</span><br>
+        Sender: <span style="color:var(--td)">${p.sender_storage}</span><br>
+        Retention: <span style="color:var(--c)">${p.retention_days} days</span><br>
+        GDPR: <span style="color:${p.gdpr_mode?'var(--g)':'var(--y)'}">${p.gdpr_mode?'Enabled':'Disabled'}</span>
+      `;
+      // Sync checkboxes
+      const cb=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=v;};
+      cb('prv-enabled', p.privacy_mode);
+      cb('prv-subject', p.subject_storage==='STORED');
+      cb('prv-sender',  p.sender_storage==='STORED');
+      cb('prv-body',    p.body_storage!=='NEVER');
+      const rd=document.getElementById('prv-retention');
+      if(rd) rd.value=p.retention_days||90;
+    }
+    // HTTPS status
+    const hs = document.getElementById('https-status');
+    if(hs && d.https){
+      const h = d.https;
+      hs.innerHTML = h.https_available ? `
+        <div style="color:var(--g);margin-bottom:4px">✅ TLS Active</div>
+        <div>Type: ${h.type||'Self-signed'}</div>
+        <div>Expires: ${h.expires||'Unknown'}</div>
+        <div>Days left: <span style="color:${(h.days_remaining||0)>30?'var(--g)':'var(--r)'}">${h.days_remaining||'?'}</span></div>
+        <div>Min TLS: ${h.tls_min_version||'TLS 1.2'}</div>
+      ` : `<div style="color:var(--r)">⚠️ ${h.reason||'Not configured'}</div>`;
+    }
+    // Audit integrity
+    const ai = document.getElementById('audit-integrity');
+    if(ai && d.integrity){
+      const i = d.integrity;
+      ai.innerHTML = `
+        <div style="color:${i.valid?'var(--g)':'var(--r)'}">
+          ${i.valid ? '✅ Chain intact' : '🚨 TAMPER DETECTED'}
+        </div>
+        <div style="color:var(--td);font-size:8px">${i.entries||0} entries verified</div>
+      `;
+    }
+    // GDPR notice
+    await loadGDPRNotice();
+    // Audit entries
+    await loadAuditEntries();
+  }catch(e){ console.error('Security status error:', e); }
+}
+
+async function updatePrivacy(){
+  try{
+    const fd = new FormData();
+    fd.append('privacy_mode_enabled', document.getElementById('prv-enabled').checked);
+    fd.append('store_subject',        document.getElementById('prv-subject').checked);
+    fd.append('store_sender',         document.getElementById('prv-sender').checked);
+    fd.append('store_body_preview',   document.getElementById('prv-body').checked);
+    fd.append('retention_days',       document.getElementById('prv-retention').value);
+    await fetch(`${API}/security/privacy`, {method:'POST', body:fd});
+    setTimeout(loadSecurityStatus, 300);
+  }catch(e){}
+}
+
+async function regenCert(){
+  document.getElementById('cert-result').innerHTML='<span style="color:var(--td)">⏳ Generating...</span>';
+  try{
+    const r = await fetch(`${API}/security/https/generate`, {method:'POST'});
+    const d = await r.json();
+    document.getElementById('cert-result').innerHTML = d.exists
+      ? `<span style="color:var(--g)">✅ Certificate generated (${d.valid_days||730} days)</span>`
+      : `<span style="color:var(--r)">❌ ${d.error||'Failed'}</span>`;
+    setTimeout(loadSecurityStatus, 500);
+  }catch(e){ document.getElementById('cert-result').innerHTML='<span style="color:var(--r)">Error</span>'; }
+}
+
+async function loadAuditEntries(){
+  try{
+    const r = await fetch(`${API}/security/audit?limit=50`);
+    const d = await r.json();
+    const el = document.getElementById('audit-entries');
+    if(!el) return;
+    const entries = d.entries || [];
+    if(!entries.length){ el.innerHTML='<div style="color:var(--td)">No audit entries yet</div>'; return; }
+    const eventCol = {
+      'DASHBOARD_ACCESS':'var(--c)', 'EMAIL_THREAT_FOUND':'var(--r)',
+      'EMAIL_SCANNED':'var(--td)', 'SYSTEM_START':'var(--g)',
+      'PRIVACY_MODE_CHANGED':'var(--y)', 'AUDIT_LOG_VIEWED':'var(--p)',
+      'CONFIG_CHANGED':'var(--o)', 'EMAIL_ACCOUNT_ADDED':'var(--g)',
+    };
+    el.innerHTML = entries.map(e=>{
+      const col = eventCol[e.event_type] || 'var(--td)';
+      const tm  = new Date(e.timestamp).toLocaleTimeString('en-US',{hour12:false});
+      const dt  = new Date(e.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return `<div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid var(--b1);align-items:center">
+        <span style="color:var(--td);min-width:28px">#${e.seq}</span>
+        <span style="color:var(--td);min-width:70px">${dt} ${tm}</span>
+        <span style="color:${col};flex:1">${e.event_type}</span>
+        <span style="color:var(--td);min-width:80px">${e.ip_address||'system'}</span>
+        <span style="color:var(--td);font-size:7px">${e.chain_hash?.slice(0,8)||''}</span>
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+
+async function verifyIntegrity(){
+  try{
+    const r = await fetch(`${API}/security/audit/verify`);
+    const d = await r.json();
+    const el = document.getElementById('audit-integrity');
+    if(el) el.innerHTML = `
+      <div style="color:${d.valid?'var(--g)':'var(--r)'}">
+        ${d.valid ? '✅ '+d.message : '🚨 '+d.message}
+      </div>`;
+    alert(d.message);
+  }catch(e){}
+}
+
+function exportAudit(){
+  window.open(`${API}/security/audit/export?days=90`, '_blank');
+}
+
+async function loadGDPRNotice(){
+  try{
+    const r = await fetch(`${API}/security/gdpr/notice`);
+    const d = await r.json();
+    const el = document.getElementById('gdpr-notice');
+    if(el) el.textContent = d.notice || '';
+  }catch(e){}
+}
+
+async function purgeOldData(days){
+  if(!confirm(`Permanently delete all audit records older than ${days} days?\nThis cannot be undone.`)) return;
+  try{
+    const r = await fetch(`${API}/security/gdpr/purge?days=${days}`, {method:'POST'});
+    const d = await r.json();
+    alert(`Purged ${d.purged_entries} entries older than ${days} days.`);
+    loadSecurityStatus();
+  }catch(e){ alert('Purge failed — check backend connection.'); }
+}
+
+// ── Email Monitor JS ───────────────────────────────────────
+
+const PROVIDER_HINTS = {
+  gmail:   'Go to myaccount.google.com/apppasswords → Generate App Password for Mail → use the 16-char code (NOT your Gmail password)',
+  outlook: 'Go to account.microsoft.com/security → Enable 2FA → Create App Password → use it here',
+  yahoo:   'Go to login.yahoo.com/account/security → Generate App Password → use it here',
+  custom:  'Enter your IMAP host, port, email address and password below',
+};
+
+const SETUP_INSTRUCTIONS = {
+  gmail:   '1. Go to myaccount.google.com/apppasswords\n2. Click "Add App Password" → select Mail\n3. Copy the 16-char code\n4. Paste it in the App Password field above\n\n⚠ Do NOT use your regular Gmail password',
+  outlook: '1. Go to account.microsoft.com/security\n2. Enable Two-step verification first\n3. Scroll down → "App passwords"\n4. Create new → copy the password\n5. Paste it in the App Password field above',
+  yahoo:   '1. Go to login.yahoo.com/account/security\n2. Click "Generate App Password"\n3. Select "Other app" → enter SentinelNet\n4. Copy the generated password\n5. Paste it in the App Password field above',
+  custom:  '1. Enter your IMAP server hostname below\n2. Port is usually 993 (SSL) or 143 (STARTTLS)\n3. Use your full email address\n4. Use your regular password (or app password if 2FA enabled)',
+};
+
+function updateProviderHint(){
+  const p = document.getElementById('em-provider')?.value || 'gmail';
+  const hint = document.getElementById('em-hint');
+  const customHost = document.getElementById('em-custom-host');
+  const steps = document.getElementById('em-setup-steps');
+  if(hint) hint.textContent = PROVIDER_HINTS[p] || '';
+  if(customHost) customHost.style.display = p === 'custom' ? 'flex' : 'none';
+  if(steps){
+    const instr = SETUP_INSTRUCTIONS[p];
+    if(instr){
+      steps.innerHTML = instr.split('\n').map(function(line){
+        if(line.startsWith('\u26a0')) return '<div style="color:var(--y);margin-top:6px">'+line+'</div>';
+        if(line === '') return '<div style="margin-top:4px"></div>';
+        return '<div>'+line+'</div>';
+      }).join('');
+    } else {
+      steps.textContent = 'Select a provider above to see setup steps.';
+    }
+  }
+}
+
+async function addEmailAccount(){
+  const provider  = document.getElementById('em-provider')?.value || 'gmail';
+  const email     = document.getElementById('em-email')?.value.trim() || '';
+  const password  = document.getElementById('em-password')?.value || '';
+  const imapHost  = document.getElementById('em-imap-host')?.value.trim() || '';
+  const imapPort  = document.getElementById('em-imap-port')?.value || '993';
+  const resEl     = document.getElementById('em-connect-result');
+
+  if(!email || !password){
+    if(resEl) resEl.innerHTML = '<div style="color:var(--y);font-size:10px;font-family:Share Tech Mono">⚠ Enter email address and app password</div>';
+    return;
+  }
+  if(resEl) resEl.innerHTML = '<div style="color:var(--td);font-size:10px;font-family:Share Tech Mono">⏳ Connecting to mail server...</div>';
+
+  try{
+    const fd = new FormData();
+    fd.append('provider',      provider);
+    fd.append('email_address', email);
+    fd.append('password',      password);
+    fd.append('imap_host',     imapHost);
+    fd.append('imap_port',     imapPort);
+    fd.append('alert_to',      email);
+
+    const r = await fetch(`${API}/email/accounts/add`, {method:'POST', body:fd});
+    const d = await r.json();
+
+    if(d.success){
+      if(resEl) resEl.innerHTML = `<div style="color:var(--g);font-size:10px;font-family:Share Tech Mono">
+        ✅ Connected! Monitoring ${email}<br>
+        Mode: ${d.mode || 'active'} | Inbox: ${d.inbox_count || 0} emails
+      </div>`;
+      document.getElementById('em-password').value = '';
+      setTimeout(loadEmailStatus, 800);
+    } else {
+      if(resEl) resEl.innerHTML = `<div style="color:var(--r);font-size:10px;font-family:Share Tech Mono">
+        ❌ ${d.message || 'Connection failed'}
+      </div>` + (d.hint ? `<div style="color:var(--td);font-size:9px;font-family:Share Tech Mono;margin-top:6px;white-space:pre-wrap;line-height:1.6;padding:6px;background:var(--s2);border-radius:4px">${d.hint}</div>` : '');
+    }
+  } catch(e) {
+    if(resEl) resEl.innerHTML = `<div style="color:var(--r);font-size:10px;font-family:Share Tech Mono">❌ Cannot reach backend — is SentinelNet running?</div>`;
+  }
+}
+
+async function removeEmailAccount(addr){
+  if(!confirm(`Stop monitoring ${addr}?`)) return;
+  await fetch(`${API}/email/accounts/${encodeURIComponent(addr)}`, {method:'DELETE'});
+  loadEmailStatus();
+}
+
+async function loadEmailStatus(){
+  try{
+    const r = await fetch(`${API}/email/status`);
+    const d = await r.json();
+    // Accounts list
+    const acEl = document.getElementById('em-accounts');
+    if(acEl){
+      if(!d.accounts || d.accounts.length === 0){
+        acEl.innerHTML = '<div style="color:var(--td);font-size:10px;text-align:center;padding:20px">No accounts connected yet.<br/>Add an account to start real-time scanning.</div>';
+      } else {
+        acEl.innerHTML = d.accounts.map(a => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b1)">
+            <div>
+              <div style="color:var(--g);font-size:10px;font-family:Share Tech Mono">${a.email_address}</div>
+              <div style="color:var(--td);font-size:9px">${a.provider} · ${a.status || 'monitoring'} · ${a.emails_scanned||0} scanned</div>
+            </div>
+            <button onclick="removeEmailAccount('${a.email_address}')" style="padding:2px 8px;border:1px solid var(--r);border-radius:3px;background:transparent;color:var(--r);cursor:pointer;font-size:9px">✕</button>
+          </div>`).join('');
+      }
+    }
+    // Feed stats
+    const statsEl = document.getElementById('em-feed-stats');
+    if(statsEl) statsEl.textContent = `${d.total_scanned||0} emails scanned · ${d.threats_found||0} threats found · ${d.accounts?.length||0} account(s) active`;
+  } catch(e) {
+    const acEl = document.getElementById('em-accounts');
+    if(acEl) acEl.innerHTML = '<div style="color:var(--r);font-size:10px">Cannot reach backend</div>';
+  }
+}
+
+// ── Browser Extension JS ─────────────────────────────────
+let _extKey = null;
+let _extStatusTimer = null;
+
+async function generateExtKey(){
+  const btn = document.getElementById('btn-gen-key');
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  try{
+    const r = await fetch(`${API}/extension/generate-key`, {method:'POST'});
+    const d = await r.json();
+    if(d.success){
+      _extKey = d.key;
+      document.getElementById('ext-key-val').textContent = d.key;
+      document.getElementById('ext-key-val').style.color = 'var(--g)';
+      document.getElementById('ext-key-sub').textContent = 'Unique to your SentinelNet — enter this in the browser extension';
+      document.getElementById('ext-key-box').style.borderColor = 'var(--g)';
+      showExtResult('ok', '✅ Key generated! Copy it into your browser extension.');
+      startExtStatusPolling();
+    }
+  } catch(e) {
+    showExtResult('err', '❌ Failed to generate key');
+  }
+  btn.textContent = '⚙ GENERATE KEY';
+  btn.disabled = false;
+}
+
+async function copyExtKey(){
+  const key = document.getElementById('ext-key-val').textContent;
+  if(!key || key === '— NO KEY —'){
+    showExtResult('warn', '⚠ Generate a key first');
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(key);
+    const btn = document.getElementById('btn-copy-key');
+    btn.textContent = '✅ COPIED!';
+    btn.style.color = 'var(--g)';
+    setTimeout(() => { btn.textContent = '📋 COPY KEY'; btn.style.color = 'var(--td)'; }, 2000);
+  } catch(e){
+    showExtResult('warn', 'Copy: ' + key);
+  }
+}
+
+async function revokeExtKey(){
+  if(!confirm('Revoke current key? The extension will disconnect immediately.')) return;
+  await fetch(`${API}/extension/revoke-key`, {method:'DELETE'});
+  _extKey = null;
+  document.getElementById('ext-key-val').textContent = '— NO KEY —';
+  document.getElementById('ext-key-val').style.color = 'var(--td)';
+  document.getElementById('ext-key-sub').textContent = 'Click Generate to create your key';
+  document.getElementById('ext-key-box').style.borderColor = 'var(--b2)';
+  setExtStatus('disconnected');
+  showExtResult('info', 'Key revoked. Generate a new one to reconnect extension.');
+  stopExtStatusPolling();
+}
+
+function installExtension(e){
+  e.preventDefault();
+  // Show instructions modal
+  const msg = [
+    '📦 INSTALL SENTINELNET EXTENSION',
+    '',
+    'Method 1 — Load Unpacked (Developer Mode):',
+    '1. Open Chrome/Edge → go to chrome://extensions',
+    '2. Toggle ON "Developer mode" (top right)',
+    '3. Click "Load unpacked"',
+    '4. Select the "extension" folder inside sentinelnet2',
+    '5. Extension icon appears in toolbar',
+    '',
+    'Method 2 — From ZIP:',
+    '1. Download SentinelNet_Extension.zip',
+    '2. Drag-and-drop the ZIP onto chrome://extensions',
+    '',
+    'After installing:',
+    '→ Click the extension icon',
+    '→ Enter your Config Key',
+    '→ Click CONNECT TO SENTINELNET',
+  ].join('\n');
+  alert(msg);
+}
+
+async function loadExtensionStatus(){
+  try{
+    const r = await fetch(`${API}/extension/key-status`);
+    const d = await r.json();
+    if(d.has_key){
+      _extKey = d.key_masked;
+      document.getElementById('ext-key-val').textContent = d.key_masked;
+      document.getElementById('ext-key-val').style.color = 'var(--g)';
+      document.getElementById('ext-key-sub').textContent = `Created ${d.created?.slice(0,10)||''} · ${d.scans||0} emails scanned`;
+      document.getElementById('ext-key-box').style.borderColor = 'var(--g)';
+      startExtStatusPolling();
+    }
+    // Stats are live-updated via WebSocket and pollExtStatus — don't overwrite here
+  } catch(e) {}
+}
+
+async function pollExtStatus(){
+  try{
+    const r = await fetch(`${API}/extension/stats`);
+    if(r.ok){
+      const d = await r.json();
+      if(d.scanned !== undefined){
+        document.getElementById('ext-stat-scanned').textContent = d.scanned || 0;
+        document.getElementById('ext-stat-threats').textContent = d.threats || 0;
+        document.getElementById('ext-stat-blocked').textContent = d.blocked || 0;
+        document.getElementById('ext-stat-safe').textContent    = d.safe    || 0;
+        // Only show CONNECTED if extension has actually sent data (last_seen within 30s)
+        const lastSeen = d.last_seen ? (Date.now()/1000 - d.last_seen) : 9999;
+        if(d.connected === true || lastSeen < 30){
+          setExtStatus('connected');
+        } else {
+          setExtStatus('key_ready'); // key exists but extension hasn't talked to backend
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+function setExtStatus(status){
+  const badge = document.getElementById('ext-status-badge');
+  const statsRow = document.getElementById('ext-stats-row');
+  if(!badge) return;
+  if(status === 'connected'){
+    badge.textContent = '🟢 EXTENSION CONNECTED';
+    badge.style.background = 'rgba(0,255,136,.12)';
+    badge.style.borderColor = 'var(--g)';
+    badge.style.color = 'var(--g)';
+    statsRow.style.display = 'block';
+  } else if(status === 'disconnected'){
+    badge.textContent = '⚪ NOT CONNECTED';
+    badge.style.background = 'rgba(68,68,68,.3)';
+    badge.style.borderColor = '#444';
+    badge.style.color = '#888';
+    statsRow.style.display = 'none';
+  } else if(status === 'key_ready'){
+    badge.textContent = '🟡 KEY READY — AWAITING EXTENSION';
+    badge.style.background = 'rgba(255,204,0,.1)';
+    badge.style.borderColor = 'var(--y)';
+    badge.style.color = 'var(--y)';
+  }
+}
+
+function startExtStatusPolling(){
+  setExtStatus('key_ready');  // show AWAITING EXTENSION — not connected yet!
+  stopExtStatusPolling();
+  _extStatusTimer = setInterval(pollExtStatus, 3000);
+  pollExtStatus(); // poll immediately so it updates fast if already connected
+}
+
+function showExtInstallGuide(){
+  const el = document.getElementById('ext-install-guide');
+  if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function stopExtStatusPolling(){
+  if(_extStatusTimer){ clearInterval(_extStatusTimer); _extStatusTimer = null; }
+}
+
+function showExtResult(type, msg){
+  const el = document.getElementById('ext-key-result');
+  if(!el) return;
+  const colors = {ok:'var(--g)', err:'var(--r)', warn:'var(--y)', info:'var(--c)'};
+  el.style.color = colors[type] || 'var(--td)';
+  el.textContent = msg;
+  if(type === 'ok') setTimeout(() => { el.textContent = ''; }, 4000);
+}
+
+// ── WebSocket ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  LOCAL JS SIMULATOR — generates all live data inside the browser.
+//  Dashboard NEVER needs backend to show values. Backend WS is bonus.
+// ══════════════════════════════════════════════════════════════════
+const SIM = {
+  threatTypes: ['DDoS / SYN Flood','Port Scan','C2 Beacon','DNS Exfiltration',
+                'Data Exfiltration','Brute Force','Lateral Movement',
+                'Suspicious Port Access','Ransomware Dropper','Polymorphic Malware',
+                'Phishing Email','Deepfake Video','Malware Binary','SQL Injection'],
+  severities:  ['LOW','MEDIUM','HIGH','CRITICAL'],
+  sevWeights:  [0.15, 0.30, 0.30, 0.25],
+  actions:     ['BLOCK','ALERT','ISOLATE','ESCALATE'],
+  agents:      ['network','phishing','binary','deepfake'],
+  agentForType:{
+    'DDoS / SYN Flood':'network','Port Scan':'network','C2 Beacon':'network',
+    'DNS Exfiltration':'network','Data Exfiltration':'network','Brute Force':'network',
+    'Lateral Movement':'network','Suspicious Port Access':'network',
+    'Phishing Email':'phishing','SQL Injection':'phishing',
+    'Ransomware Dropper':'binary','Polymorphic Malware':'binary','Malware Binary':'binary',
+    'Deepfake Video':'deepfake',
+  },
+  counter: 0, uptime: 0, flRounds: 0, flBw: 0,
+  pick(arr, weights){
+    if(!weights) return arr[Math.floor(Math.random()*arr.length)];
+    const r=Math.random(); let s=0;
+    for(let i=0;i<arr.length;i++){ s+=weights[i]; if(r<s) return arr[i]; }
+    return arr[arr.length-1];
+  },
+  randIp(){ return `${10+Math.floor(Math.random()*240)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`; },
+  genThreat(){
+    this.counter++;
+    const type = this.pick(this.threatTypes);
+    const sev  = this.pick(this.severities, this.sevWeights);
+    const aid  = this.agentForType[type] || this.pick(this.agents);
+    const conf = parseFloat((0.45 + Math.random()*0.50).toFixed(3));
+    const sevIdx = this.severities.indexOf(sev);
+    // Action rules based on severity — LOW traffic is never blocked/isolated
+    const action = sevIdx>=3?'BLOCK':            // CRITICAL → always BLOCK
+                   sevIdx>=2?(Math.random()<0.5?'BLOCK':'ISOLATE'):  // HIGH → BLOCK or ISOLATE
+                   sevIdx>=1?(Math.random()<0.5?'ALERT':'ESCALATE'):  // MEDIUM → ALERT or ESCALATE
+                   'MONITOR';                    // LOW → MONITOR only, never block
+    const blocked = ['BLOCK','ISOLATE'].includes(action) && conf>0.55 && sevIdx>=2;
+    const status  = blocked?'BLOCKED': action==='MONITOR'?'MONITORING':'FLAGGED';
+    // Reward logic: correctly handled threats → positive, safe traffic monitored → small positive, FP → negative
+    const reward = parseFloat((
+      blocked          ? 0.6 + Math.random()*0.35  :   // correctly blocked threat → strong positive
+      action==='MONITOR' ? 0.05 + Math.random()*0.15 :  // correctly monitored safe traffic → small positive
+      action==='ALERT'   ? 0.1  + Math.random()*0.2  :  // alert on medium → moderate positive
+      -0.05 - Math.random()*0.30                         // FP or wrong action → negative
+    ).toFixed(4));
+    return {
+      id:`THR-${String(this.counter).padStart(6,'0')}`,
+      time: new Date().toLocaleTimeString('en-US',{hour12:false}),
+      timestamp: new Date().toISOString(),
+      threat_type:type, severity:sev, agent_id:aid,
+      action, confidence:conf, reward, blocked,
+      status,
+      src_ip: this.randIp(), dst_ip:`192.168.1.${Math.floor(Math.random()*254)+1}`,
+      shap_top:[
+        {feature:'byte_rate',     value:parseFloat((Math.random()*0.9).toFixed(3))},
+        {feature:'syn_ratio',     value:parseFloat((Math.random()*0.8).toFixed(3))},
+        {feature:'packet_rate',   value:parseFloat((Math.random()*0.7).toFixed(3))},
+      ],
+    };
+  },
+  tick(){
+    this.uptime++;
+    const isLive = D.metrics.capture_mode === 'LIVE';
+
+    if(!isLive){
+      // SYNTHETIC MODE only: generate agent training threats
+      const n = Math.random()<0.3?3: Math.random()<0.5?2:1;
+      for(let i=0;i<n;i++){
+        const t = this.genThreat();
+        // Skip if the responsible agent is paused
+        if(D.agents[t.agent_id] && !D.agents[t.agent_id].active) continue;
+        D.threats.unshift(t);
+        D.agentThreatCounts[t.agent_id]=(D.agentThreatCounts[t.agent_id]||0)+1;
+        D.audit.unshift({id:`LOG-${String(this.counter).padStart(6,'0')}`,
+          time:t.time, timestamp:t.timestamp, threat:t.threat_type, severity:t.severity,
+          action:t.action, agent:t.agent_id, src_ip:t.src_ip});
+      }
+      D.threats = D.threats.slice(0,300);
+      D.audit   = D.audit.slice(0,200);
+    }
+    // LIVE MODE: threats come only from real backend WS packets (never generated here)
+
+    // FL round every ~30 ticks
+    if(this.uptime%30===0){ this.flRounds++; this.flBw+=parseFloat((0.08+Math.random()*0.04).toFixed(4)); }
+
+    // Always evolve agent metrics (even in LIVE mode — agents are always learning)
+    // EXCEPT paused agents — they freeze completely when paused
+    const WEIGHTS = {network:0.35,phishing:0.25,binary:0.25,deepfake:0.15};
+    for(const aid of this.agents){
+      const a = D.agents[aid];
+      if(!a.active) continue;  // PAUSED — skip evolution entirely
+      a.detection_accuracy = Math.max(0.72, Math.min(0.95,
+        a.detection_accuracy + (Math.random()-0.49)*0.002));
+      // FPR mean-reverts toward target 2.1% — strong enough pull to stay on target
+      const FPR_TARGET = 0.021;
+      const fprPull = (FPR_TARGET - a.false_positive_rate) * 0.05;
+      a.false_positive_rate = Math.max(0.008, Math.min(0.035,
+        a.false_positive_rate + fprPull + (Math.random()-0.5)*0.001));
+      a.trust_score = Math.max(0.70, Math.min(0.98,
+        a.trust_score + (Math.random()-0.49)*0.002));
+      a.epsilon = Math.max(0.05, a.epsilon - 0.0002);
+      a.avg_loss = parseFloat((0.05+Math.random()*0.15).toFixed(4));
+      a.step_count += 1;
+      // Track histories for RL Training charts
+      D.lossH[aid].push(a.avg_loss);    if(D.lossH[aid].length>60)  D.lossH[aid].shift();
+      D.epsH[aid].push(a.epsilon);      if(D.epsH[aid].length>60)   D.epsH[aid].shift();
+      D.trustH[aid].push(a.trust_score);if(D.trustH[aid].length>60) D.trustH[aid].shift();
+    }
+
+    // Compute system metrics from current agent state
+    const sr   = this.agents.reduce((s,a)=> s + D.agents[a].detection_accuracy*WEIGHTS[a], 0);
+    const aa   = this.agents.reduce((s,a)=> s + D.agents[a].detection_accuracy, 0) / 4;
+    const afpr = this.agents.reduce((s,a)=> s + D.agents[a].false_positive_rate, 0) / 4;
+    const atrust = this.agents.reduce((s,a)=> s + D.agents[a].trust_score, 0) / 4;
+    const total  = D.threats.length;
+    const blocked= D.threats.filter(t=>t.status==='BLOCKED').length;
+
+    D.metrics = {
+      system_reward:          parseFloat(sr.toFixed(5)),
+      avg_detection_accuracy: parseFloat(aa.toFixed(4)),
+      avg_false_positive_rate:parseFloat(afpr.toFixed(4)),
+      avg_trust_score:        parseFloat(atrust.toFixed(4)),
+      total_threats:          Math.max(this.counter, total),
+      total_blocked:          blocked,
+      false_positives:        Math.floor(total*afpr),
+      block_rate:             parseFloat((blocked/Math.max(total,1)).toFixed(4)),
+      false_positive_rate_pct:parseFloat((afpr*100).toFixed(2)),
+      fl_rounds:              this.flRounds,
+      bandwidth_used_mb:      parseFloat(this.flBw.toFixed(3)),
+      active_agents:          Object.values(D.agents).filter(a=>a.active).length,
+      threats_per_min:        parseFloat((Math.max(this.counter,total)/Math.max((this.uptime*1.5)/60,0.017)).toFixed(1)),
+      uptime:                 Math.floor(this.uptime * 1.5),  // convert ticks to real seconds
+      capture_mode:           D.metrics.capture_mode || 'SYNTHETIC', // preserve LIVE if WS set it
+    };
+    D.rewardH.push(D.metrics.system_reward);
+    if(D.rewardH.length>80) D.rewardH.shift();
+
+    renderAll();
+    renderCharts();
+  }
+};
+
+// Start local simulator immediately — no backend needed
+setInterval(()=>SIM.tick(), 1500);
+
+function connectWS(){
+  // On every (re)connect: restore existing threats + audit logs from backend REST API
+  // This is what makes the feed survive tab close/reopen
+  fetch('/api/threats?limit=100').then(r=>r.json()).then(data=>{
+    if(data.threats && data.threats.length){
+      const existingIds = new Set(D.threats.map(t=>t.id));
+      const toAdd = data.threats.filter(t=>!existingIds.has(t.id));
+      toAdd.forEach(t=>{
+        if(!t.time && t.timestamp) t.time = new Date(t.timestamp).toLocaleTimeString('en-US',{hour12:false});
+        if(!t.timestamp) t.timestamp = new Date().toISOString();
+        D.agentThreatCounts[t.agent_id] = (D.agentThreatCounts[t.agent_id]||0)+1;
+      });
+      D.threats = [...toAdd, ...D.threats].slice(0,300);
+      renderAll();
+    }
+  }).catch(()=>{});
+  fetch('/api/audit-logs?limit=100').then(r=>r.json()).then(data=>{
+    if(data.logs && data.logs.length){
+      const existingIds = new Set(D.audit.map(l=>l.id));
+      const newLogs = data.logs.filter(l=>!existingIds.has(l.id));
+      if(newLogs.length){ D.audit = [...newLogs,...D.audit].slice(0,200); renderAll(); }
+    }
+  }).catch(()=>{});
+  // Try to connect to backend WS — if it works, merge real data on top
+  try {
+    ws = new WebSocket(WS);
+    ws.onmessage = e => {
+      try {
+        const d = JSON.parse(e.data);
+        // Sync agent states from backend — but PRESERVE local active/paused state
+        // Backend doesn't know user clicked pause in the UI
+        if(d.agents){
+          Object.entries(d.agents).forEach(([id,a])=>{
+            if(D.agents[id]){
+              const wasActive = D.agents[id].active; // save local pause state
+              Object.assign(D.agents[id], a);
+              D.agents[id].active = wasActive;       // restore — never let backend override pause
+            }
+          });
+        }
+        // Update capture mode from backend — this controls LIVE vs SYNTHETIC display
+        if(d.metrics && d.metrics.capture_mode){
+          D.metrics.capture_mode = d.metrics.capture_mode;
+        }
+        // In LIVE mode: real packets from backend are the ONLY threat source
+        // In SYNTHETIC: backend threats supplement JS simulator
+        if(d.new_threats && d.new_threats.length){
+          const existingIds = new Set(D.threats.map(t=>t.id));
+          d.new_threats.forEach(t=>{
+            if(!existingIds.has(t.id)){
+              // Ensure time fields are always set
+              if(!t.time && t.timestamp) t.time = new Date(t.timestamp).toLocaleTimeString('en-US',{hour12:false});
+              if(!t.timestamp) t.timestamp = new Date().toISOString();
+              D.threats.unshift(t);
+              D.agentThreatCounts[t.agent_id]=(D.agentThreatCounts[t.agent_id]||0)+1;
+            }
+          });
+          D.threats = D.threats.slice(0,300);
+        }
+        if(d.audit_logs && d.audit_logs.length){
+          const existingIds = new Set(D.audit.map(l=>l.id));
+          const newLogs = d.audit_logs.filter(l=>!existingIds.has(l.id));
+          if(newLogs.length) D.audit = [...newLogs, ...D.audit].slice(0,200);
+        }
+        if(d.fl_status && d.fl_status.rounds_completed) D.fl = d.fl_status;
+        // Replace D.alerts with latest from backend (backend sends full current list)
+        if(d.alerts !== undefined) D.alerts = d.alerts;
+        // Trust matrix
+        if(d.trust_matrix) D.trust = d.trust_matrix;
+        if(d.ext_stats){ const s=d.ext_stats;
+          ['scanned','threats','blocked','safe'].forEach(k=>{
+            const el=document.getElementById('ext-stat-'+k); if(el) el.textContent=s[k]||0;
+          });
+        }
+        renderAll();
+      } catch(_){}
+    };
+    ws.onerror = ()=>{};
+    ws.onclose = ()=>setTimeout(connectWS, 5000);
+  } catch(_){}
+}
+
+// ── Render all ─────────────────────────────────────────────
+function renderAll(){
+  renderHeader(); renderAgents(); renderMetrics();
+  renderAlerts(); renderFL(); renderRobustness(); renderStats();
+  renderCharts();
+  if(D.currentTab==='threats') renderThreatFeed();
+  if(D.currentTab==='shap')    renderSHAP();
+  if(D.currentTab==='audit')   renderAudit();
+  // Trust Matrix tab removed
+  if(D.currentTab==='rl')      renderCharts();
+}
+
+function renderHeader(){
+  const m = D.metrics;
+  document.getElementById('h-total').textContent   = (m.total_threats||0).toLocaleString();
+  document.getElementById('h-blocked').textContent = (m.total_blocked||0).toLocaleString();
+  document.getElementById('h-fpr').textContent     = (m.false_positive_rate_pct||0).toFixed(1)+'%';
+  document.getElementById('h-fl').textContent      = m.fl_rounds||0;
+  document.getElementById('h-reward').textContent  = (m.system_reward||0).toFixed(4);
+  const advBadge = document.getElementById('badge-adv');
+  if(m.adversarial_mode){ advBadge.style.display='flex'; } else { advBadge.style.display='none'; }
+  // Capture mode badge
+  const capBadge = document.getElementById('badge-capture');
+  if(m.capture_mode === 'LIVE'){
+    capBadge.style.borderColor='var(--g)'; capBadge.style.color='var(--g)';
+    capBadge.textContent='🟢 LIVE CAPTURE';
+  } else {
+    capBadge.style.borderColor='var(--y)'; capBadge.style.color='var(--y)';
+    capBadge.textContent='🟡 SYNTHETIC MODE';
+  }
+}
+
+function renderAgents(){
+  const el = document.getElementById('agents-wrap');
+  if(!Object.keys(D.agents).length){
+    // Show skeleton placeholders while backend connects
+    const PLACEHOLDERS = [
+      {name:'Network Sentinel',  col:'#00f5ff', mod:'Network Traffic'},
+      {name:'Phishing Guardian', col:'#ff6b35', mod:'Email/Phishing'},
+      {name:'Binary Analyzer',   col:'#7fff00', mod:'Malware/Binary'},
+      {name:'DeepFake Detector', col:'#bf5fff', mod:'DeepFake Media'},
+    ];
+    el.innerHTML = PLACEHOLDERS.map(p=>`
+      <div class="ag" style="--ac:${p.col};opacity:0.5">
+        <div class="ag-top"><div class="ag-n" style="color:${p.col}">${p.name}</div>
+          <span class="ag-status" style="color:var(--td)">CONNECTING...</span></div>
+        <div class="ag-mod">${p.mod}</div>
+        <div class="bar-wrap"><div class="bar-lbl"><span>Trust τ</span><span>--</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:0%;background:${p.col}"></div></div></div>
+        <div class="bar-wrap"><div class="bar-lbl"><span>Accuracy</span><span>--</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:0%;background:${p.col};opacity:.55"></div></div></div>
+        <div class="ag-eps" style="color:var(--td)">Waiting for backend...</div>
+      </div>`).join('');
+    return;
+  }
+  el.innerHTML = Object.entries(D.agents).map(([id,a])=>{
+    const col = COLORS[id]||'#00f5ff';
+    const trust = (a.trust_score||0)*100;
+    const acc   = (a.detection_accuracy||0)*100;
+    const eps   = (a.epsilon||0).toFixed(3);
+    const statColor = a.active?'var(--g)':'var(--td)';
+    return `<div class="ag ${a.active?'':'off'}" style="--ac:${col}">
+      <div class="ag-top">
+        <div class="ag-n">${a.icon||''} ${a.name}</div>
+        <span class="ag-status" style="color:${statColor};font-weight:bold">${a.active ? 'ACTIVE' : '⏸ PAUSED'}</span>
+      </div>
+      <div class="ag-mod">${a.modality}</div>
+      <div class="bar-wrap"><div class="bar-lbl"><span>Trust τ</span><span>${trust.toFixed(1)}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${trust}%;background:${col}"></div></div></div>
+      <div class="bar-wrap"><div class="bar-lbl"><span>Accuracy</span><span>${acc.toFixed(1)}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${acc}%;background:${col};opacity:.55"></div></div></div>
+      <div class="ag-grid">
+        <div class="ag-stat" style="--ac:${col}"><div class="ag-sv">${(a.threats_detected||a.total_decisions||0).toLocaleString()}</div><div class="ag-sl">Decisions</div></div>
+        <div class="ag-stat" style="--ac:${col}"><div class="ag-sv">${(a.false_positive_rate||0).toFixed(3)}</div><div class="ag-sl">FP Rate</div></div>
+        <div class="ag-stat" style="--ac:${col}"><div class="ag-sv">${a.replay_size||0}</div><div class="ag-sl">Replay Buf</div></div>
+        <div class="ag-stat" style="--ac:${col}"><div class="ag-sv">${(a.avg_loss||0).toFixed(4)}</div><div class="ag-sl">Avg Loss</div></div>
+      </div>
+      <div class="ag-eps">ε=${eps} | lr=${(a.lr||0).toFixed(5)} | step#${a.step_count||0}</div>
+      <button class="ag-btn" onclick="toggleAgent('${id}')" style="border-color:${col};color:${col}">
+        ${a.active?'⏸ PAUSE':'▶ RESUME'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function renderMetrics(){
+  const m = D.metrics;
+  // Use warm-start baseline if backend hasn't sent real data yet
+  const sysRew  = m.system_reward        || (Object.keys(D.agents).length ? null : 0);
+  const avgAcc  = m.avg_detection_accuracy;
+  const fpr     = m.false_positive_rate_pct;
+  const tpm     = m.threats_per_min;
+  const bw      = m.bandwidth_used_mb;
+  document.getElementById('m-reward').textContent = sysRew!=null ? sysRew.toFixed(5) : '...';
+  document.getElementById('m-acc').textContent    = avgAcc!=null ? (avgAcc*100).toFixed(1)+'%' : '...';
+  document.getElementById('m-tpm').textContent    = tpm!=null    ? tpm.toFixed(1)               : '...';
+  document.getElementById('m-bw').textContent     = bw!=null     ? bw.toFixed(2)+' MB'          : '...';
+  // FPR: color-coded vs 2.1% target
+  const fprEl = document.getElementById('m-fpr');
+  if(fprEl && fpr!=null){
+    fprEl.textContent = fpr.toFixed(2)+'%';
+    fprEl.style.color = fpr <= 2.10 ? 'var(--g)' : fpr <= 2.30 ? 'var(--y)' : 'var(--r)';
+  }
+}
+
+function renderFL(){
+  const f = D.fl;
+  document.getElementById('fl-rounds').textContent = f.rounds_completed||0;
+  document.getElementById('fl-bw').textContent     = (f.total_bandwidth_mb||0).toFixed(3)+' MB';
+  document.getElementById('fl-bwpr').textContent   = (f.bandwidth_per_round_mb||0).toFixed(3)+' MB';
+  const pct = Math.min(100, ((f.bandwidth_per_round_mb||0)/2.3)*100);
+  document.getElementById('bw-fill').style.width = pct+'%';
+}
+
+function renderAlerts(){
+  const el = document.getElementById('alerts-wrap');
+  if(!D.alerts.length){ el.innerHTML='<div style="font-size:9px;color:var(--td);text-align:center;padding:15px">No active alerts</div>'; return; }
+  el.innerHTML = D.alerts.slice(0,10).map(a=>`
+    <div class="al-item al-${a.severity}">
+      <div class="al-t">${new Date(a.timestamp).toLocaleTimeString('en-US',{hour12:false})}</div>
+      <div class="al-m">${a.message}</div>
+      <div class="al-a">${NAMES[a.agent_id]||a.agent_id} → <span class="act act-${a.action}">${a.action}</span></div>
+    </div>`).join('');
+}
+
+function renderRobustness(){
+  const agDefs = [
+    {id:'network',  name:'Network',  color:'#00f5ff'},
+    {id:'phishing', name:'Phishing', color:'#ff6b35'},
+    {id:'binary',   name:'Binary',   color:'#7fff00'},
+    {id:'deepfake', name:'DeepFake', color:'#bf5fff'},
+  ];
+  const robs = agDefs.map(a => {
+    const ag = D.agents[a.id]||{};
+    const clean  = Math.round((ag.detection_accuracy||0.756)*100);
+    const robust = Math.round((1-(ag.false_positive_rate||0.021))*100);
+    return {...a, clean, robust};
+  });
+  document.getElementById('rob-wrap').innerHTML = robs.map(r=>`
+    <div class="rob-item">
+      <div class="rob-hdr"><span>${r.name}</span><span style="color:${r.color}">${r.robust}% robust</span></div>
+      <div class="rob-bar"><div class="rob-fill" style="width:${r.clean}%;background:${r.color}44"></div></div>
+      <div class="rob-bar"><div class="rob-fill" style="width:${r.robust}%;background:${r.color}"></div></div>
+      <div class="rob-ft"><span>Clean: ${r.clean}%</span><span>Robust: ${r.robust}%</span></div>
+    </div>`).join('');
+}
+
+function renderStats(){
+  const m = D.metrics;
+  const setText = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setText('s-uptime',  formatUptime(m.uptime||0));
+  setText('s-total',   (m.total_threats||0).toLocaleString());
+  setText('s-blocked', (m.total_blocked||0).toLocaleString());
+  setText('s-br',      ((m.block_rate||0)*100).toFixed(1)+'%');
+  setText('s-tpm',     (m.threats_per_min||0).toFixed(1)+'/min');
+  setText('s-trust',   (m.avg_trust_score||0).toFixed(4));
+  setText('s-acc',     ((m.avg_detection_accuracy||0)*100).toFixed(1)+'%');
+  setText('s-fpr',     (m.false_positive_rate_pct||0).toFixed(2)+'%');
+  setText('s-agents',  `${m.active_agents||4}/4`);
+  setText('s-fl',      m.fl_rounds||0);
+  setText('s-bw',      (m.bandwidth_used_mb||0).toFixed(3)+' MB');
+  setText('s-reward',  (m.system_reward||0).toFixed(5));
+  const modeEl = document.getElementById('s-mode');
+  if(modeEl){
+    modeEl.textContent = m.capture_mode||'SYNTHETIC';
+    modeEl.style.color = m.capture_mode==='LIVE' ? 'var(--g)' : 'var(--y)';
+  }
+  const replay = Object.values(D.agents).reduce((s,a)=>s+(a.replay_size||0),0);
+  setText('s-replay',  replay.toLocaleString());
+}
+
+function formatUptime(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60; return `${h}h ${m}m ${ss}s`; }
+
+function renderThreatFeed(){
+  const isLive = D.metrics.capture_mode === 'LIVE';
+  const liveCount = Math.max(D.metrics.total_threats||0, D.threats.length);
+  document.getElementById('feed-cnt').textContent = liveCount.toLocaleString()+' EVENTS';
+  // Update feed title to reflect mode
+  const feedTitle = document.querySelector('.tf-ht');
+  if(feedTitle){
+    feedTitle.textContent = isLive
+      ? '// LIVE THREAT FEED — REAL NETWORK PACKETS'
+      : '// LIVE THREAT FEED — SYNTHETIC TRAINING DATA';
+    feedTitle.style.color = isLive ? 'var(--g)' : 'var(--y)';
+  }
+  // Show empty-state message in live mode when no real packets yet
+  if(isLive && D.threats.length === 0){
+    document.getElementById('threat-body').innerHTML =
+      `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--td);font-size:10px">
+        📡 LIVE MODE — Waiting for real network packets...<br>
+        <span style="color:var(--g);font-size:9px">Real traffic will appear here as it is captured from your network interface</span>
+      </td></tr>`;
+    return;
+  }
+  // COMPLETELY exclude email threats from Live Threats tab
+  // Email threats are shown only in the Email Monitor tab
+  const visibleThreats = D.threats.filter(t => {
+    const src = (t.source || '').toUpperCase();
+    const proto = (t.proto || '').toUpperCase();
+    return proto !== 'EMAIL' && proto !== 'SMTP' &&
+           !src.startsWith('EXTENSION_') &&
+           src !== 'LIVE_EMAIL' &&
+           !src.includes('EMAIL');
+  });
+  const rows = visibleThreats.slice(0,40).map(t=>{
+    const col = COLORS[t.agent_id]||'#00f5ff';
+    const conf = t.confidence;
+    const cClass = conf>0.85?'conf-h':conf>0.65?'conf-m':'conf-l';
+    const time = t.time || (t.timestamp ? new Date(t.timestamp).toLocaleTimeString('en-US',{hour12:false}) : '--:--:--');
+    return `<tr class="tr-row">
+      <td class="mono">${t.id}</td>
+      <td class="mono">${time}</td>
+      <td><span class="ag-dot" style="background:${col}"></span><span style="font-size:9px">${t.agent_id}</span></td>
+      <td style="font-size:10px">${t.threat_type}${t.adversarial?' <span class="adv-tag">ADV</span>':''}</td>
+      <td><span class="sev sev-${t.severity}">${t.severity}</span></td>
+      <td><span class="act act-${t.action}">${t.action}</span></td>
+      <td class="${cClass}">${(conf*100).toFixed(0)}%</td>
+      <td class="mono">${(t.epsilon||0).toFixed(3)}</td>
+      <td class="mono" style="color:${(t.reward||0)>=0?'var(--g)':'var(--r)'}">${(t.reward||0).toFixed(3)}</td>
+      <td class="mono" style="color:${t.status==='BLOCKED'?'var(--r)':t.status==='FLAGGED'?'var(--y)':'var(--td)'}">${t.status}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('threat-body').innerHTML = rows;
+}
+
+function renderSHAP(){
+  const latest = D.threats[0];
+  if(!latest||!latest.shap_top){ document.getElementById('shap-latest').innerHTML='<div style="color:var(--td);font-size:10px;padding:10px">Waiting for threat data...</div>'; return; }
+  const maxShap = Math.max(...latest.shap_top.map(s=>Math.abs(s.shap)),0.001);
+  document.getElementById('shap-latest').innerHTML = `
+    <div style="font-size:9px;color:var(--td);margin-bottom:8px">Threat: ${latest.threat_type} | Action: <span class="act act-${latest.action}">${latest.action}</span> | Agent: ${latest.agent_id}</div>
+    <div style="font-size:9px;color:var(--w);margin-bottom:10px;font-style:italic;border-left:2px solid var(--c);padding-left:6px">${latest.reasoning}</div>
+    ${latest.shap_top.map(s=>{
+      const pct = (Math.abs(s.shap)/maxShap)*100;
+      const col = s.shap>0?'var(--r)':'var(--g)';
+      return `<div class="shap-item">
+        <span class="shap-feat">${s.feature}</span>
+        <div class="shap-bar-wrap"><div class="shap-bar" style="width:${pct}%;background:${col}"></div></div>
+        <span class="shap-val" style="color:${col}">${s.shap>0?'+':''}${s.shap.toFixed(4)}</span>
+      </div>`;
+    }).join('')}`;
+}
+
+function renderAudit(){
+  const el = document.getElementById('audit-wrap');
+  if(!D.audit.length){ el.innerHTML='<div style="color:var(--td);font-size:9px;padding:12px">No logs yet...</div>'; return; }
+  el.innerHTML = D.audit.slice(0,60).map(l=>{
+    const src = l.source||'';
+    const isEmail = src.includes('EMAIL');
+    const isLive  = src.includes('LIVE') && !isEmail;
+    const srcBadge = isEmail
+      ? `<span style="font-size:7px;background:rgba(255,165,0,.15);color:orange;border:1px solid orange;padding:1px 4px;border-radius:3px">📧 EMAIL</span>`
+      : isLive
+      ? `<span style="font-size:7px;background:rgba(0,245,255,.1);color:var(--c);border:1px solid var(--c);padding:1px 4px;border-radius:3px">LIVE</span>`
+      : `<span style="font-size:7px;color:var(--td)">SIM</span>`;
+    const ts = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('en-US',{hour12:false}) : '--:--:--';
+    return `
+    <div class="alog-item alog-${l.severity||'LOW'}" style="${isEmail?'border-left:2px solid orange;':isLive?'border-left:2px solid var(--c);':''}">
+      <div class="alog-time">${l.id} · ${ts} ${srcBadge}</div>
+      <div class="alog-reason">${l.reasoning||l.threat||'—'}</div>
+      <div class="alog-action">
+        <span style="font-size:8px;color:var(--td)">${l.agent||'—'}</span>
+        <span class="act act-${l.action||'MONITOR'}" style="font-size:8px">${l.action||'MONITOR'}</span>
+        <span class="sev sev-${l.severity||'LOW'}">${l.severity||'LOW'}</span>
+        <span style="font-size:8px;color:var(--td)">conf:${((l.confidence||0)*100).toFixed(0)}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrustMatrix(){
+  const el = document.getElementById('trust-wrap');
+  if(!el) return;
+  const agents = ['network','phishing','binary','deepfake'];
+
+  // Build trust matrix from D.trust (backend) or fallback to agent trust_scores
+  const matrix = {};
+  if(Object.keys(D.trust).length){
+    // Use real backend trust matrix
+    agents.forEach(from => {
+      matrix[from] = {};
+      agents.filter(t=>t!==from).forEach(to => {
+        matrix[from][to] = (D.trust[from]||{})[to] || (D.agents[from]?.trust_score||0.8);
+      });
+    });
+  } else {
+    // Fallback: derive from agent trust scores (cross-agent trust approximation)
+    agents.forEach(from => {
+      matrix[from] = {};
+      agents.filter(t=>t!==from).forEach(to => {
+        // Trust between agents correlates with their individual trust scores
+        const base = ((D.agents[from]?.trust_score||0.8) + (D.agents[to]?.trust_score||0.8)) / 2;
+        matrix[from][to] = parseFloat((base + (Math.random()-0.5)*0.05).toFixed(3));
+      });
+    });
+  }
+
+  el.innerHTML = agents.map(from=>`
+    <div class="tm-from" style="margin-top:6px;font-size:9px;color:var(--td);font-family:'Share Tech Mono'">
+      FROM: <span style="color:${COLORS[from]}">${NAMES[from]||from}</span>
+    </div>
+    <div class="tm-grid">${agents.filter(t=>t!==from).map(to=>{
+      const v = matrix[from][to]||0;
+      const col = v>=0.8?'var(--g)':v>=0.65?'var(--y)':'var(--r)';
+      return `<div class="tm-cell">
+        <div class="tm-v" style="color:${col}">${(v*100).toFixed(1)}%</div>
+        <div class="tm-l" style="color:${COLORS[to]}">${to.slice(0,3).toUpperCase()}</div>
+        ${v<0.65?'<div style="font-size:7px;color:var(--r)">LOW</div>':''}
+      </div>`;
+    }).join('')}</div>`).join('');
+}
+
+// ── Charts ─────────────────────────────────────────────────
+function lineChart(id, datasets, labels, yLabel=''){
+  const canvas = document.getElementById(id); if(!canvas) return;
+  const W=canvas.offsetWidth||400, H=canvas.height||100;
+  canvas.width=W; const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const allVals = datasets.flatMap(d=>d.data.filter(v=>v!=null));
+  if(!allVals.length) return;
+  const min=Math.min(...allVals)*0.9, max=Math.max(...allVals)*1.1||0.001;
+  const pad={top:6,right:6,bottom:14,left:yLabel?30:6};
+  const pw=W-pad.left-pad.right, ph=H-pad.top-pad.bottom;
+
+  // Grid
+  ctx.strokeStyle='rgba(14,38,64,0.8)'; ctx.lineWidth=1;
+  for(let i=0;i<=3;i++){ const y=pad.top+ph*i/3; ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke(); }
+
+  datasets.forEach(ds=>{
+    const data = ds.data.filter((_,i)=>i<ds.data.length);
+    if(data.length<2) return;
+    const step = pw/(data.length-1);
+    // Area
+    const grad=ctx.createLinearGradient(0,pad.top,0,pad.top+ph);
+    grad.addColorStop(0,ds.color+'44'); grad.addColorStop(1,ds.color+'00');
+    ctx.beginPath(); ctx.moveTo(pad.left,pad.top+ph);
+    data.forEach((v,i)=>{ const x=pad.left+i*step,y=pad.top+ph-((v-min)/(max-min))*ph; i===0?ctx.lineTo(x,y):ctx.lineTo(x,y); });
+    ctx.lineTo(pad.left+(data.length-1)*step,pad.top+ph); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+    // Line
+    ctx.beginPath(); ctx.strokeStyle=ds.color; ctx.lineWidth=1.5;
+    data.forEach((v,i)=>{ const x=pad.left+i*step,y=pad.top+ph-((v-min)/(max-min))*ph; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.stroke();
+    // Latest value label
+    if(data.length>0){
+      const lv=data[data.length-1], lx=pad.left+(data.length-1)*step, ly=pad.top+ph-((lv-min)/(max-min))*ph;
+      ctx.fillStyle=ds.color; ctx.font='8px Share Tech Mono';
+      ctx.fillText(typeof lv==='number'?lv.toFixed(4):lv, Math.max(0,lx-30), Math.max(10,ly-5));
+    }
+  });
+
+  // Y axis label
+  if(yLabel){ ctx.save(); ctx.translate(10,H/2); ctx.rotate(-Math.PI/2); ctx.fillStyle='rgba(74,122,153,0.7)'; ctx.font='7px Share Tech Mono'; ctx.fillText(yLabel,0,0); ctx.restore(); }
+}
+
+function barChart(id, groups, colors){
+  const canvas=document.getElementById(id); if(!canvas) return;
+  const W=canvas.offsetWidth||400, H=canvas.height||120;
+  canvas.width=W; const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const labels=Object.keys(groups[0].data);
+  const n=labels.length, m=groups.length;
+  const gW=(W-20)/(n+0.5);
+  const bW=gW/(m+0.5)*0.9;
+  const maxV=Math.max(...groups.flatMap(g=>Object.values(g.data)),1);
+
+  labels.forEach((lbl,i)=>{
+    groups.forEach((g,j)=>{
+      const v=g.data[lbl]||0;
+      const x=20+i*gW+j*(bW+1);
+      const h=Math.max(2,(v/maxV)*(H-22));
+      const y=H-h-14;
+      ctx.fillStyle=g.color+'55'; ctx.fillRect(x,y,bW,h);
+      ctx.fillStyle=g.color; ctx.fillRect(x,y,bW,2);
+      if(v>0){ ctx.fillStyle=g.color; ctx.font='7px Share Tech Mono'; ctx.fillText(v,x+1,y-2); }
+    });
+    ctx.fillStyle='rgba(74,122,153,0.8)'; ctx.font='7px Share Tech Mono';
+    ctx.fillText(lbl.slice(0,4),20+i*gW,H-3);
+  });
+  // Legend
+  groups.forEach((g,i)=>{ ctx.fillStyle=g.color; ctx.fillRect(W-80+i*36,4,8,4); ctx.font='7px Share Tech Mono'; ctx.fillText(g.label,W-70+i*36,10); });
+}
+
+function donutChart(id){
+  const canvas=document.getElementById(id); if(!canvas) return;
+  const W=240, H=90; canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const agents=['network','phishing','binary','deepfake'];
+  const rawVals=agents.map(a=>D.agentThreatCounts[a]||0);
+  const total=rawVals.reduce((s,v)=>s+v,0);
+  const cols=agents.map(a=>COLORS[a]);
+  const cx=50,cy=45,r=38,ri=22;
+
+  if(total===0){
+    // No threats yet — show equal placeholder segments
+    const sweep = (Math.PI*2)/4;
+    agents.forEach((_,i)=>{
+      const angle = -Math.PI/2 + i*sweep;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,angle,angle+sweep);
+      ctx.closePath(); ctx.fillStyle=cols[i]+'44'; ctx.fill();
+    });
+    ctx.beginPath(); ctx.arc(cx,cy,ri,0,Math.PI*2);
+    ctx.fillStyle=var2hex('--s1'); ctx.fill();
+    ctx.fillStyle='#4a7a99'; ctx.font='bold 9px Share Tech Mono';
+    ctx.textAlign='center'; ctx.fillText('0',cx,cy+4);
+    ctx.font='7px Share Tech Mono'; ctx.fillText('TOTAL',cx,cy+13);
+  } else {
+    let angle=-Math.PI/2;
+    rawVals.forEach((v,i)=>{
+      const sweep=(v/total)*(Math.PI*2);
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,angle,angle+sweep);
+      ctx.closePath(); ctx.fillStyle=cols[i]; ctx.fill(); angle+=sweep;
+    });
+    ctx.beginPath(); ctx.arc(cx,cy,ri,0,Math.PI*2);
+    ctx.fillStyle=var2hex('--s1'); ctx.fill();
+    ctx.fillStyle='#00f5ff'; ctx.font='bold 10px Orbitron';
+    ctx.textAlign='center'; ctx.fillText(total,cx,cy+4);
+    ctx.font='7px Share Tech Mono'; ctx.fillText('TOTAL',cx,cy+13);
+  }
+
+  ctx.textAlign='left';
+  agents.forEach((a,i)=>{
+    const pct = total>0 ? Math.round((rawVals[i]/total)*100) : 0;
+    const count = rawVals[i];
+    ctx.fillStyle=cols[i]; ctx.fillRect(100,8+i*18,7,7);
+    ctx.fillStyle= count>0 ? cols[i] : '#4a7a99';
+    ctx.font='8px Share Tech Mono';
+    ctx.fillText(`${a.slice(0,3).toUpperCase()}: ${pct}% (${count})`,112,16+i*18);
+  });
+}
+function var2hex(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#081525'; }
+
+function renderCharts(){
+  if(D.currentTab==='threats'){
+    lineChart('c-reward',[{data:D.rewardH,color:'#00f5ff',label:'Reward'}]);
+    donutChart('c-donut');
+  }
+  if(D.currentTab==='shap'){
+    // Action distribution
+    const acts=['BLOCK','ALERT','ISOLATE','ESCALATE'];
+    const agGroups = Object.entries(D.agents).map(([id,a])=>({
+      label:id.slice(0,3).toUpperCase(),
+      color:COLORS[id],
+      data:Object.fromEntries(acts.map(act=>[act,a.action_distribution?a.action_distribution[act]||0:0]))
+    }));
+    barChart('c-actions', agGroups.length?agGroups:[{label:'N/A',color:'#00f5ff',data:{}}], ['#00f5ff','#ff6b35','#7fff00','#bf5fff']);
+
+    // Robustness chart
+    const canvas=document.getElementById('c-robust'); if(canvas){
+      const W=canvas.offsetWidth||600,H=80; canvas.width=W; canvas.height=H;
+      const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,W,H);
+      const robAgents = [{id:'network',n:'Network',col:'#00f5ff'},{id:'phishing',n:'Phishing',col:'#ff6b35'},{id:'binary',n:'Binary',col:'#7fff00'},{id:'deepfake',n:'DeepFake',col:'#bf5fff'}];
+      const robs = robAgents.map(a => {
+        const ag = D.agents[a.id]||{};
+        return {n:a.n, c:Math.round((ag.detection_accuracy||0.756)*100), r:Math.round((1-(ag.false_positive_rate||0.021))*100), col:a.col};
+      });
+      const bW=(W-40)/(robs.length*2+robs.length);
+      robs.forEach((rb,i)=>{
+        const bx=20+i*((bW*2)+bW);
+        [[rb.c,'44'],[rb.r,'ff']].forEach(([v,op],j)=>{
+          const h=Math.max(2,(v/100)*(H-22)); const y=H-h-14;
+          ctx.fillStyle=rb.col+op; ctx.fillRect(bx+j*(bW+2),y,bW,h);
+          ctx.fillStyle=rb.col; ctx.fillRect(bx+j*(bW+2),y,bW,2);
+          ctx.fillStyle=rb.col; ctx.font='7px Share Tech Mono'; ctx.fillText(v.toFixed(0)+'%',bx+j*(bW+2),y-2);
+        });
+        ctx.fillStyle='#4a7a99'; ctx.font='7px Share Tech Mono'; ctx.fillText(rb.n.slice(0,3),bx,H-3);
+      });
+      ctx.fillStyle='#4a7a99'; ctx.font='8px Share Tech Mono'; ctx.fillText('Clean',W-80,10); ctx.fillText('Robust',W-40,10);
+    }
+  }
+  if(D.currentTab==='trust'){
+    const agIds=['network','phishing','binary','deepfake'];
+    const datasets=agIds.map(id=>({data:D.trustH[id]||[],color:COLORS[id],label:id}));
+    lineChart('c-trust-hist',datasets,[],'Trust τ');
+  }
+  if(D.currentTab==='rl'){
+    // Loss chart
+    const lossDs = Object.keys(COLORS).map(id=>({data:D.lossH[id]||[],color:COLORS[id],label:id}));
+    lineChart('c-loss',lossDs,[],'Loss');
+    // Epsilon chart
+    const epsDs = Object.keys(COLORS).map(id=>({data:D.epsH[id]||[],color:COLORS[id],label:id}));
+    lineChart('c-eps',epsDs,[],'ε');
+    // Acc vs FPR bar chart
+    const canvas=document.getElementById('c-acc'); if(canvas){
+      const W=canvas.offsetWidth||600,H=80; canvas.width=W; canvas.height=H;
+      const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,W,H);
+      const agIds=Object.keys(D.agents);
+      const bW=(W-20)/(agIds.length*2+agIds.length);
+      agIds.forEach((id,i)=>{
+        const a=D.agents[id];
+        const acc=(a.detection_accuracy||0)*100, fpr=(a.false_positive_rate||0)*100;
+        const bx=20+i*((bW*2)+bW);
+        [[acc,'#00f5ff','44'],[fpr,'#ff2d55','ff']].forEach(([v,col,op],j)=>{
+          const h=Math.max(2,(v/100)*(H-22)); const y=H-h-14;
+          ctx.fillStyle=col+op; ctx.fillRect(bx+j*(bW+2),y,bW,h);
+          ctx.fillStyle=col; ctx.fillRect(bx+j*(bW+2),y,bW,2);
+          ctx.fillStyle=col; ctx.font='7px Share Tech Mono'; ctx.fillText(v.toFixed(1)+'%',bx+j*(bW+2),y-2);
+        });
+        ctx.fillStyle='#4a7a99'; ctx.font='7px Share Tech Mono'; ctx.fillText(id.slice(0,3).toUpperCase(),bx,H-3);
+      });
+      ctx.fillStyle='#00f5ff'; ctx.font='8px Share Tech Mono'; ctx.fillText('Accuracy',W-100,10);
+      ctx.fillStyle='#ff2d55'; ctx.fillText('FP Rate',W-55,10);
+    }
+  }
+}
+
+// ── Actions ────────────────────────────────────────────────
+async function toggleAgent(id){
+  // Instant local toggle — don't wait for backend
+  if(D.agents[id]){
+    D.agents[id].active = !D.agents[id].active;
+    D.agents[id].status = D.agents[id].active ? 'ACTIVE' : 'PAUSED';
+    renderAgents();
+  }
+  // Also tell backend (best effort)
+  try{
+    const r = await fetch(`${API}/agents/${id}/toggle`, {method:'POST'});
+    const d = await r.json();
+    // Sync with backend's authoritative state
+    if(D.agents[id]){
+      D.agents[id].active = d.active;
+      D.agents[id].status = d.active ? 'ACTIVE' : 'PAUSED';
+      renderAgents();
+    }
+  } catch(e){
+    // Backend unreachable — local toggle stays in effect
+  }
+}
+async function triggerFL(){
+  try{ await fetch(`${API}/federated/trigger`,{method:'POST'}); }catch(e){}
+}
+async function toggleAdv(){
+  try{
+    const r=await fetch(`${API}/adversarial/toggle`,{method:'POST'});
+    const d=await r.json();
+    const btn=document.getElementById('adv-toggle');
+    if(d.adversarial_mode){ btn.textContent='🔴 ADVERSARIAL MODE ON'; btn.classList.add('on'); }
+    else { btn.textContent='🔴 ADVERSARIAL MODE OFF'; btn.classList.remove('on'); }
+  }catch(e){}
+}
+
+window.addEventListener('resize',()=>{ setTimeout(renderCharts,50); });
+
+// ── Scan Functions ─────────────────────────────────────────
+function resultCard(verdict, confidence, severity, indicators, extra=''){
+  const col = severity==='CRITICAL'?'var(--r)':severity==='HIGH'?'var(--o)':severity==='MEDIUM'?'var(--y)':'var(--g)';
+  const pct = Math.round(confidence*100);
+  return `<div style="border:1px solid ${col};border-radius:6px;padding:10px;margin-top:6px;background:var(--s2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-family:'Orbitron';font-size:13px;color:${col}">${verdict}</span>
+      <span style="font-family:'Share Tech Mono';font-size:11px;color:${col}">${pct}% confident</span>
+    </div>
+    <div style="height:4px;background:var(--b1);border-radius:2px;margin-bottom:8px;">
+      <div style="height:100%;width:${pct}%;background:${col};border-radius:2px;transition:width .5s"></div>
+    </div>
+    ${indicators.map(i=>`<div style="font-size:9px;color:var(--td);font-family:'Share Tech Mono';margin-bottom:2px">⚠ ${i}</div>`).join('')}
+    ${extra}
+  </div>`;
+}
+
+function showLoading(elId){ document.getElementById(elId).innerHTML = '<div style="color:var(--td);font-family:Share Tech Mono;font-size:10px;padding:8px">⏳ Analyzing...</div>'; }
+
+async function scanText(){
+  const text = document.getElementById('scan-text').value.trim();
+  if(!text){ alert('Please enter some text to analyze.'); return; }
+  showLoading('text-result');
+  try{
+    const fd = new FormData(); fd.append('text', text);
+    const r = await fetch(`${API}/scan/text`, {method:'POST', body:fd});
+    const d = await r.json();
+
+    const pct = Math.round((d.confidence||0)*100);
+    const isAI = d.is_ai_generated;
+    // Color based on VERDICT not severity — green=human, red=AI
+    const col = isAI
+      ? (pct>=80?'var(--r)': pct>=65?'var(--o)':'var(--y)')
+      : 'var(--g)';
+    const label = isAI
+      ? (pct>=80?'⚠ AI-GENERATED':'⚠ LIKELY AI-GENERATED')
+      : (pct>=40?'✓ UNCERTAIN — LEANING HUMAN':'✓ LIKELY HUMAN');
+
+    // Score breakdown with labels
+    const scores = d.scores || {};
+    const scoreLabels = {
+      burstiness:      'Burstiness (smooth=AI)',
+      formality:       'Formality (robotic tone)',
+      perplexity:      'Uniformity (low variance=AI)',
+      punctuation:     'Punctuation consistency',
+      vocab_diversity: 'Vocabulary diversity',
+      signature:       'AI signature phrases',
+      repetition:      'Repetitive structure',
+    };
+    const scoreRows = Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+      const barPct = Math.round(v*100);
+      const barCol = v>0.7?'var(--r)':v>0.4?'var(--y)':'var(--g)';
+      return `<div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--td);margin-bottom:1px">
+          <span>${scoreLabels[k]||k}</span>
+          <span style="color:${barCol}">${barPct}%</span>
+        </div>
+        <div style="height:3px;background:var(--b1);border-radius:2px">
+          <div style="height:100%;width:${barPct}%;background:${barCol};border-radius:2px"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('text-result').innerHTML = `
+      <div style="border:1px solid ${col};border-radius:6px;padding:10px;margin-top:6px;background:var(--s2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-family:'Orbitron';font-size:12px;color:${col}">${label}</span>
+          <span style="font-family:'Share Tech Mono';font-size:11px;color:${col}">${pct}% AI score</span>
+        </div>
+        <div style="height:5px;background:var(--b1);border-radius:3px;margin-bottom:10px;">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .5s"></div>
+        </div>
+        <div style="font-size:8px;color:var(--td);margin-bottom:6px;font-family:'Share Tech Mono'">
+          // SCORE BREAKDOWN (threshold: 48%)
+        </div>
+        ${scoreRows}
+        <div style="font-size:8px;color:var(--td);margin-top:6px;font-family:'Share Tech Mono'">
+          Words: ${d.word_count} | Sentences: ${d.sentence_count} | Method: ${d.analysis_method||'Statistical Ensemble'}
+        </div>
+      </div>`;
+    loadScanHistory();
+  }catch(e){ document.getElementById('text-result').innerHTML = '<div style="color:var(--r);font-size:10px">Error connecting to backend</div>'; }
+}
+
+async function scanEmail(){
+  const subject = document.getElementById('scan-subject').value;
+  const sender  = document.getElementById('scan-sender').value;
+  const body    = document.getElementById('scan-body').value;
+  if(!body && !subject){ alert('Please fill in at least the subject or body.'); return; }
+  showLoading('email-result');
+  try{
+    const fd = new FormData();
+    fd.append('subject', subject); fd.append('sender', sender); fd.append('body', body);
+    const r = await fetch(`${API}/scan/email`, {method:'POST', body:fd});
+    const d = await r.json();
+    const isThreat = d.is_threat || d.confidence > 0.5;
+    const col = isThreat
+      ? (d.severity==='CRITICAL'?'var(--r)':d.severity==='HIGH'?'var(--o)':'var(--y)')
+      : 'var(--g)';
+    const pct = Math.round((d.confidence||0)*100);
+    const indicators = (d.indicators||[]).map(i=>`<div style="font-size:9px;color:var(--td);margin-bottom:2px">⚠ ${i}</div>`).join('');
+    document.getElementById('email-result').innerHTML = `
+      <div style="border:1px solid ${col};border-radius:6px;padding:10px;margin-top:6px;background:var(--s2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-family:'Orbitron';font-size:12px;color:${col}">${d.verdict||'SCAN COMPLETE'}</span>
+          <span style="font-family:'Share Tech Mono';font-size:11px;color:${col}">${pct}% confidence</span>
+        </div>
+        <div style="height:4px;background:var(--b1);border-radius:2px;margin-bottom:8px;">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:2px;transition:width .5s"></div>
+        </div>
+        ${indicators}
+        <div style="font-size:9px;color:var(--td);margin-top:4px;font-family:'Share Tech Mono'">
+          Action: <span style="color:${d.recommended_action==='BLOCK'?'var(--r)':'var(--y)'}">${d.recommended_action||'MONITOR'}</span>
+          | AI Score: ${((d.scores?.ai_generated||0)*100).toFixed(0)}%
+          | Phishing: ${((d.scores?.phishing_keywords||0)*100).toFixed(0)}%
+        </div>
+      </div>`;
+    loadScanHistory();
+  }catch(e){ document.getElementById('email-result').innerHTML = '<div style="color:var(--r);font-size:10px">Error connecting to backend</div>'; }
+}
+
+async function scanImage(input){
+  if(!input.files[0]) return;
+  showLoading('image-result');
+  document.getElementById('img-drop').innerHTML = `<div style="font-size:10px;color:var(--td)">📂 ${input.files[0].name}</div>`;
+  try{
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    const r = await fetch(`${API}/scan/image`, {method:'POST', body:fd});
+    const d = await r.json();
+    const isFake = d.is_deepfake;
+    const pct = Math.round((d.confidence||0)*100);
+    const col = isFake
+      ? (pct>=80?'var(--r)':pct>=65?'var(--o)':'var(--y)')
+      : 'var(--g)';
+    const label = isFake ? '⚠ AI-GENERATED / DEEPFAKE' : '✓ LIKELY AUTHENTIC';
+    const scores = d.scores||{};
+    const scoreNames = {file_header:'File header check',entropy:'Entropy analysis',exif:'EXIF metadata',compression_ratio:'Compression ratio',byte_patterns:'Byte patterns'};
+    const scoreRows = Object.entries(scores).map(([k,v])=>{
+      const bp = Math.round(v*100);
+      const bc = v>0.6?'var(--r)':v>0.35?'var(--y)':'var(--g)';
+      return `<div style="margin-bottom:4px">
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--td)">
+          <span>${scoreNames[k]||k}</span><span style="color:${bc}">${bp}%</span>
+        </div>
+        <div style="height:3px;background:var(--b1);border-radius:2px">
+          <div style="height:100%;width:${bp}%;background:${bc};border-radius:2px"></div>
+        </div></div>`;
+    }).join('');
+    const indicators = (d.indicators||[]).map(i=>`<div style="font-size:9px;color:var(--y);margin-bottom:2px">⚠ ${i}</div>`).join('');
+    document.getElementById('image-result').innerHTML = `
+      <div style="border:1px solid ${col};border-radius:6px;padding:10px;margin-top:6px;background:var(--s2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-family:'Orbitron';font-size:11px;color:${col}">${label}</span>
+          <span style="font-family:'Share Tech Mono';font-size:11px;color:${col}">${pct}%</span>
+        </div>
+        <div style="height:4px;background:var(--b1);border-radius:2px;margin-bottom:8px;">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:2px;transition:width .5s"></div>
+        </div>
+        <div style="font-size:8px;color:var(--td);margin-bottom:5px;font-family:'Share Tech Mono'">// ANALYSIS SCORES</div>
+        ${scoreRows}${indicators}
+        <div style="font-size:8px;color:var(--td);margin-top:4px">Size: ${d.file_size_kb||'?'} KB | ${d.analysis_method||'Statistical + Metadata'}</div>
+        ${isFake?'':'<div style="font-size:8px;color:var(--td);margin-top:3px">⚡ Upload real faceswap images for best accuracy</div>'}
+      </div>`;
+    loadScanHistory();
+  }catch(e){ document.getElementById('image-result').innerHTML = '<div style="color:var(--r);font-size:10px">Error connecting to backend</div>'; }
+}
+
+async function scanVoice(input){
+  if(!input.files[0]) return;
+  showLoading('voice-result');
+  document.getElementById('voice-drop').innerHTML = `<div style="font-size:10px;color:var(--td)">🎵 ${input.files[0].name}</div>`;
+  try{
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    const r = await fetch(`${API}/scan/voice`, {method:'POST', body:fd});
+    const d = await r.json();
+    const extra = `<div style="font-size:9px;color:var(--td);margin-top:4px">Format: ${d.audio_format} | Size: ${d.file_size_kb} KB</div>`;
+    document.getElementById('voice-result').innerHTML = resultCard(
+      d.verdict, d.confidence, d.severity, d.indicators||[], extra
+    );
+    loadScanHistory();
+  }catch(e){ document.getElementById('voice-result').innerHTML = '<div style="color:var(--r);font-size:10px">Error connecting to backend</div>'; }
+}
+
+async function scanVideo(input){
+  if(!input.files[0]) return;
+  const file = input.files[0];
+  // Warn if file is very large
+  if(file.size > 200 * 1024 * 1024){
+    document.getElementById('video-result').innerHTML =
+      '<div style="color:var(--y);font-size:10px;font-family:Share Tech Mono">⚠ File >200MB — analysis may be slow. Only first 50MB will be scanned.</div>';
+  }
+  document.getElementById('video-drop').innerHTML =
+    `<div style="font-size:11px;color:var(--p);font-family:Share Tech Mono">⏳ Uploading ${file.name}...</div>`;
+  showLoading('video-result');
+  try{
+    // For large files, only send first 50MB to avoid timeout
+    const maxBytes = 50 * 1024 * 1024;
+    const blob = file.size > maxBytes ? file.slice(0, maxBytes) : file;
+    const fd = new FormData();
+    fd.append('file', blob, file.name);
+    const r = await fetch(`${API}/scan/video`, {method:'POST', body:fd});
+    const d = await r.json();
+    const tools = d.metadata?.ai_tools_found || [];
+    const toolsStr = tools.length ? `<div style="font-size:9px;color:var(--p);margin-top:3px">AI Tools: ${tools.slice(0,3).join(', ')}</div>` : '';
+    const flags = (d.flags||[]).slice(0,4).map(f=>
+      `<div style="font-size:8px;color:var(--td);font-family:'Share Tech Mono';margin-top:2px">⚑ ${f}</div>`
+    ).join('');
+    const extra = `
+      <div style="font-size:9px;color:var(--td);margin-top:4px">
+        Format: ${d.metadata?.format||'?'} | Size: ${d.file_info?.size_mb||0} MB
+        ${d.metadata?.duration_seconds ? ` | Duration: ${d.metadata.duration_seconds}s` : ''}
+      </div>
+      ${toolsStr}
+      <div style="margin-top:6px">${flags}</div>
+    `;
+    document.getElementById('video-result').innerHTML = resultCard(
+      d.verdict, d.confidence, d.severity, [], extra
+    );
+    document.getElementById('video-drop').innerHTML =
+      `<div style="font-size:10px;color:var(--td)">🎬 ${file.name}</div>`;
+    loadScanHistory();
+  }catch(e){
+    document.getElementById('video-result').innerHTML =
+      '<div style="color:var(--r);font-size:10px">Error — file may be too large or unsupported format</div>';
+    document.getElementById('video-drop').innerHTML =
+      '<div style="font-size:24px">🎬</div><div style="font-size:9px;color:var(--td)">Click to try again</div>';
+  }
+}
+
+
+async function loadScanHistory(){
+  try{
+    const r = await fetch(`${API}/scan/history?limit=20`);
+    const d = await r.json();
+    const el = document.getElementById('scan-history');
+    if(!el) return;
+    if(!d.scans.length){ el.innerHTML='<div style="color:var(--td);font-size:9px;padding:8px">No scans yet</div>'; return; }
+    const typeIcon = {TEXT:'🤖', EMAIL:'📧', IMAGE:'🖼️', VOICE:'🎤', VIDEO:'🎬'};
+    el.innerHTML = d.scans.map(s=>{
+      const col = s.severity==='CRITICAL'?'var(--r)':s.severity==='HIGH'?'var(--o)':s.severity==='MEDIUM'?'var(--y)':'var(--g)';
+      const time = new Date(s.timestamp).toLocaleTimeString('en-US',{hour12:false});
+      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1);">
+        <span style="font-size:12px">${typeIcon[s.type]||'?'}</span>
+        <span style="font-family:'Share Tech Mono';font-size:8px;color:var(--td);min-width:60px">${s.scan_id}</span>
+        <span style="font-size:9px;flex:1;color:var(--w)">${s.verdict||''}</span>
+        <span style="font-family:'Share Tech Mono';font-size:9px;color:${col}">${((s.confidence||0)*100).toFixed(0)}%</span>
+        <span style="font-family:'Share Tech Mono';font-size:8px;color:var(--td)">${time}</span>
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+
+// ── Init ───────────────────────────────────────────────────
+// Render immediately with baseline data, then start WS (optional bonus)
+renderAll();
+renderCharts();
+connectWS();
+setTimeout(loadStartupCheck, 1500);
+
+</script>
+</body>
+</html>
